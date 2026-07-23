@@ -74,6 +74,21 @@ function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [menu, setMenu] = useState(false);
   const [showTop, setShowTop] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
+
+  const goTo = (id: string) => {
+    setMenu(false);
+    setTransitioning(true);
+    window.setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        const y = el.getBoundingClientRect().top + window.scrollY - 72;
+        window.scrollTo({ top: y, behavior: "auto" });
+      }
+      window.setTimeout(() => setTransitioning(false), 380);
+    }, 260);
+  };
+
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");

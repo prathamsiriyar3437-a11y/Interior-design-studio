@@ -19,9 +19,13 @@ import after from "@/assets/after.jpg";
 import bedroomMasterAsset from "@/assets/bedroom-master.png.asset.json";
 import bedroomArchAsset from "@/assets/bedroom-arch.png.asset.json";
 import foyerGrandAsset from "@/assets/foyer-grand.png.asset.json";
+import studyNookAsset from "@/assets/study-nook.png.asset.json";
+import windowSeatAsset from "@/assets/window-seat.png.asset.json";
 const bedroomMaster = bedroomMasterAsset.url;
 const bedroomArch = bedroomArchAsset.url;
 const foyerGrand = foyerGrandAsset.url;
+const studyNook = studyNookAsset.url;
+const windowSeat = windowSeatAsset.url;
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -381,12 +385,14 @@ function Services() {
 
 /* ---------------- PORTFOLIO ---------------- */
 const PROJECTS = [
-  { img: foyerGrand, title: "Grand Teakwood Foyer", cat: "Luxury Villas", span: "row-span-2" },
+  { img: foyerGrand, title: "Illuminated Teakwood Foyer", cat: "Luxury Villas", span: "row-span-2" },
   { img: pKitchen, title: "Onyx Modular Kitchen", cat: "Kitchens" },
   { img: bedroomMaster, title: "Walnut Master Suite", cat: "Bedrooms" },
   { img: pDining, title: "Crystal Dining Hall", cat: "Living Rooms", span: "row-span-2" },
   { img: bedroomArch, title: "Arched Floral Bedroom", cat: "Bedrooms" },
+  { img: studyNook, title: "Teak Study Nook", cat: "Apartments" },
   { img: pOffice, title: "Heritage Office", cat: "Offices" },
+  { img: windowSeat, title: "Sunlit Window Lounge", cat: "Apartments" },
   { img: pVilla, title: "Palm Grove Villa", cat: "Luxury Villas" },
   { img: pWardrobe, title: "Aurora Walk-in", cat: "Apartments" },
 ];

@@ -74,6 +74,21 @@ function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [menu, setMenu] = useState(false);
   const [showTop, setShowTop] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
+
+  const goTo = (id: string) => {
+    setMenu(false);
+    setTransitioning(true);
+    window.setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        const y = el.getBoundingClientRect().top + window.scrollY - 72;
+        window.scrollTo({ top: y, behavior: "auto" });
+      }
+      window.setTimeout(() => setTransitioning(false), 380);
+    }, 260);
+  };
+
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -101,28 +116,28 @@ function Home() {
       {/* NAV */}
       <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? "glass shadow-[0_10px_40px_-20px_rgba(0,0,0,0.25)]" : ""}`}>
         <div className="max-w-7xl mx-auto px-5 lg:px-10 flex items-center justify-between h-20">
-          <a href="#home" className="flex items-center gap-2 group">
+          <button onClick={() => goTo("home")} className="flex items-center gap-2 group">
             <span className="grid place-items-center h-10 w-10 rounded-full border border-gold text-gold font-display text-xl">I</span>
-            <span className="hidden sm:flex flex-col leading-tight">
+            <span className="hidden sm:flex flex-col leading-tight text-left">
               <span className={`font-display text-lg tracking-wide ${scrolled ? "text-foreground" : "text-white"}`}>Interior Design</span>
               <span className={`text-[10px] tracking-[0.3em] ${scrolled ? "text-muted-foreground" : "text-white/70"}`}>STUDIO · MANGALURU</span>
             </span>
-          </a>
+          </button>
           <nav className="hidden lg:flex items-center gap-8">
             {NAV.map(([l, id]) => (
-              <a key={id} href={`#${id}`} className={`text-sm font-medium tracking-wide transition-colors relative group ${scrolled ? "text-foreground/80 hover:text-foreground" : "text-white/80 hover:text-white"}`}>
+              <button key={id} onClick={() => goTo(id)} className={`text-sm font-medium tracking-wide transition-colors relative group ${scrolled ? "text-foreground/80 hover:text-foreground" : "text-white/80 hover:text-white"}`}>
                 {l}
                 <span className="absolute -bottom-1 left-0 h-px w-0 bg-gold group-hover:w-full transition-all duration-700 ease-out" />
-              </a>
+              </button>
             ))}
           </nav>
           <div className="flex items-center gap-2">
             <button onClick={toggleDark} aria-label="Toggle theme" className={`grid place-items-center h-10 w-10 rounded-full border transition ${scrolled ? "border-border hover:bg-secondary" : "border-white/30 text-white hover:bg-white/10"}`}>
               {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
-            <a href="#contact" className="hidden md:inline-flex items-center gap-2 rounded-full bg-gold text-black px-5 py-2.5 text-sm font-semibold hover:brightness-110 transition shadow-[0_10px_30px_-10px_rgba(201,162,39,0.6)]">
+            <button onClick={() => goTo("contact")} className="hidden md:inline-flex items-center gap-2 rounded-full bg-gold text-black px-5 py-2.5 text-sm font-semibold hover:brightness-110 transition shadow-[0_10px_30px_-10px_rgba(201,162,39,0.6)]">
               Book Consultation <ArrowRight className="h-4 w-4" />
-            </a>
+            </button>
             <button onClick={() => setMenu(true)} className={`lg:hidden grid place-items-center h-10 w-10 rounded-full border ${scrolled ? "border-border" : "border-white/30 text-white"}`}>
               <Menu className="h-4 w-4" />
             </button>
@@ -138,20 +153,40 @@ function Home() {
               <button onClick={() => setMenu(false)} className="self-end grid place-items-center h-10 w-10 rounded-full border border-border"><X className="h-4 w-4" /></button>
               <nav className="mt-8 flex flex-col gap-1">
                 {NAV.map(([l, id]) => (
-                  <a key={id} href={`#${id}`} onClick={() => setMenu(false)} className="py-3 border-b border-border font-display text-2xl hover:text-gold transition">{l}</a>
+                  <button key={id} onClick={() => goTo(id)} className="py-3 border-b border-border font-display text-2xl hover:text-gold transition text-left">{l}</button>
                 ))}
               </nav>
-              <a href="#contact" onClick={() => setMenu(false)} className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black px-5 py-3 font-semibold">Book Consultation</a>
+              <button onClick={() => goTo("contact")} className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black px-5 py-3 font-semibold">Book Consultation</button>
             </motion.aside>
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* Glassmorphism section transition */}
+      <AnimatePresence>
+        {transitioning && (
+          <motion.div
+            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            animate={{ opacity: 1, backdropFilter: "blur(24px)" }}
+            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 z-[65] pointer-events-none bg-white/10 dark:bg-black/20 border-y border-white/10"
+          >
+
+            <motion.div
+              initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} exit={{ scaleX: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute top-0 left-0 h-[2px] w-full bg-gold origin-left"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Hero />
+      <Portfolio />
       <Marquee />
       <About />
       <Services />
-      <Portfolio />
       <WhyUs />
       <Process />
       <BeforeAfter />
@@ -161,6 +196,7 @@ function Home() {
       <CTA />
       <Contact />
       <Footer />
+
 
       {/* Floating actions */}
       <a href={`https://wa.me/${WA}`} target="_blank" rel="noopener" aria-label="WhatsApp" className="fixed bottom-6 right-6 z-40 grid place-items-center h-14 w-14 rounded-full bg-[#25D366] text-white shadow-[0_20px_40px_-10px_rgba(37,211,102,0.6)] hover:scale-105 transition-transform duration-500">
@@ -410,7 +446,7 @@ function Portfolio() {
           <button key={c} onClick={() => setCat(c)} className={`px-4 py-2 rounded-full text-sm border transition ${cat === c ? "bg-foreground text-background border-foreground" : "border-border hover:border-gold hover:text-gold"}`}>{c}</button>
         ))}
       </div>
-      <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 auto-rows-[220px] gap-4">
+      <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-[200px] sm:auto-rows-[220px] gap-3 sm:gap-4">
         {filtered.map((p, i) => (
           <motion.button key={p.title} onClick={() => setLb(i)} layout initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.09, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className={`group relative overflow-hidden rounded-3xl ${p.span ?? ""}`}>

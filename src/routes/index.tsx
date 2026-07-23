@@ -19,9 +19,13 @@ import after from "@/assets/after.jpg";
 import bedroomMasterAsset from "@/assets/bedroom-master.png.asset.json";
 import bedroomArchAsset from "@/assets/bedroom-arch.png.asset.json";
 import foyerGrandAsset from "@/assets/foyer-grand.png.asset.json";
+import studyNookAsset from "@/assets/study-nook.png.asset.json";
+import windowSeatAsset from "@/assets/window-seat.png.asset.json";
 const bedroomMaster = bedroomMasterAsset.url;
 const bedroomArch = bedroomArchAsset.url;
 const foyerGrand = foyerGrandAsset.url;
+const studyNook = studyNookAsset.url;
+const windowSeat = windowSeatAsset.url;
 
 export const Route = createFileRoute("/")({
   head: () => ({

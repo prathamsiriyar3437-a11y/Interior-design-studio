@@ -171,8 +171,8 @@ function Home() {
             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="fixed inset-0 z-[65] pointer-events-none bg-white/10 dark:bg-black/20 border-y border-white/10"
-            style={{ WebkitBackdropFilter: "blur(24px)" }}
           >
+
             <motion.div
               initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} exit={{ scaleX: 0 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}

@@ -414,8 +414,9 @@ function Portfolio() {
         {filtered.map((p, i) => (
           <motion.button key={p.title} onClick={() => setLb(i)} layout initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.09, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className={`group relative overflow-hidden rounded-3xl ${p.span ?? ""}`}>
-            <img src={p.img} alt={p.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.04]" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-70 group-hover:opacity-90 transition" />
+            <img src={p.img} alt={p.title} loading="lazy" className="h-full w-full object-cover grayscale-[0.15] saturate-[0.9] group-hover:grayscale-0 group-hover:saturate-100 transition-all duration-[1400ms] ease-out group-hover:scale-[1.04]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-700" />
+            <div className="pointer-events-none absolute inset-3 border border-white/0 group-hover:border-white/25 transition-all duration-700" />
             <div className="absolute inset-x-0 bottom-0 p-5 text-left text-white">
               <div className="text-xs tracking-widest uppercase text-gold">{p.cat}</div>
               <div className="mt-1 font-display text-xl">{p.title}</div>

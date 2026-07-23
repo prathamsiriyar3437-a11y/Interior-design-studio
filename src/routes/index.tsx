@@ -410,7 +410,7 @@ function Portfolio() {
           <button key={c} onClick={() => setCat(c)} className={`px-4 py-2 rounded-full text-sm border transition ${cat === c ? "bg-foreground text-background border-foreground" : "border-border hover:border-gold hover:text-gold"}`}>{c}</button>
         ))}
       </div>
-      <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 auto-rows-[220px] gap-4">
+      <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-[200px] sm:auto-rows-[220px] gap-3 sm:gap-4">
         {filtered.map((p, i) => (
           <motion.button key={p.title} onClick={() => setLb(i)} layout initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.09, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className={`group relative overflow-hidden rounded-3xl ${p.span ?? ""}`}>

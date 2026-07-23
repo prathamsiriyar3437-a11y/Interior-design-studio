@@ -163,14 +163,14 @@ function Home() {
       <Footer />
 
       {/* Floating actions */}
-      <a href={`https://wa.me/${WA}`} target="_blank" rel="noopener" aria-label="WhatsApp" className="fixed bottom-6 right-6 z-40 grid place-items-center h-14 w-14 rounded-full bg-[#25D366] text-white shadow-[0_20px_40px_-10px_rgba(37,211,102,0.6)] hover:scale-110 transition">
+      <a href={`https://wa.me/${WA}`} target="_blank" rel="noopener" aria-label="WhatsApp" className="fixed bottom-6 right-6 z-40 grid place-items-center h-14 w-14 rounded-full bg-[#25D366] text-white shadow-[0_20px_40px_-10px_rgba(37,211,102,0.6)] hover:scale-105 transition-transform duration-500">
         <MessageCircle className="h-6 w-6" />
         <span className="absolute inline-flex h-full w-full rounded-full bg-[#25D366] opacity-40 animate-ping" />
       </a>
       <AnimatePresence>
         {showTop && (
           <motion.button initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label="Back to top"
-            className="fixed bottom-6 left-6 z-40 grid place-items-center h-12 w-12 rounded-full bg-foreground text-background shadow-lg hover:scale-110 transition">
+            className="fixed bottom-6 left-6 z-40 grid place-items-center h-12 w-12 rounded-full bg-foreground text-background shadow-lg hover:scale-105 transition-transform duration-500">
             <ArrowUp className="h-5 w-5" />
           </motion.button>
         )}
@@ -366,7 +366,7 @@ function Services() {
       <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {SERVICES.map((s, i) => (
           <motion.div key={s.name}
-            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.03 }}
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className="group relative rounded-3xl border border-border bg-card p-7 hover:border-gold/60 transition-all hover:-translate-y-1 hover:shadow-[0_30px_60px_-30px_rgba(201,162,39,0.4)]">
             <div className="grid place-items-center h-14 w-14 rounded-2xl bg-secondary group-hover:bg-gold group-hover:text-black transition">
               <s.icon className="h-6 w-6" />
@@ -412,9 +412,9 @@ function Portfolio() {
       </div>
       <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 auto-rows-[220px] gap-4">
         {filtered.map((p, i) => (
-          <motion.button key={p.title} onClick={() => setLb(i)} layout initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
+          <motion.button key={p.title} onClick={() => setLb(i)} layout initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.09, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className={`group relative overflow-hidden rounded-3xl ${p.span ?? ""}`}>
-            <img src={p.img} alt={p.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+            <img src={p.img} alt={p.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.04]" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-70 group-hover:opacity-90 transition" />
             <div className="absolute inset-x-0 bottom-0 p-5 text-left text-white">
               <div className="text-xs tracking-widest uppercase text-gold">{p.cat}</div>
@@ -448,7 +448,7 @@ function WhyUs() {
       <Header light kicker="Why choose us" title="A studio built on trust" sub="Nine reasons our clients recommend us — and come back for their next home." />
       <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map(([t, Icon], i) => (
-          <motion.div key={t} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
+          <motion.div key={t} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.09, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className="glass-dark rounded-2xl p-6 flex items-center gap-4 text-white hover:border-gold transition">
             <div className="grid place-items-center h-12 w-12 rounded-xl bg-gold text-black shrink-0"><Icon className="h-5 w-5" /></div>
             <div className="font-display text-xl">{t}</div>

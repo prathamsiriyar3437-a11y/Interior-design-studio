@@ -112,7 +112,7 @@ function Home() {
             {NAV.map(([l, id]) => (
               <a key={id} href={`#${id}`} className={`text-sm font-medium tracking-wide transition-colors relative group ${scrolled ? "text-foreground/80 hover:text-foreground" : "text-white/80 hover:text-white"}`}>
                 {l}
-                <span className="absolute -bottom-1 left-0 h-px w-0 bg-gold group-hover:w-full transition-all duration-300" />
+                <span className="absolute -bottom-1 left-0 h-px w-0 bg-gold group-hover:w-full transition-all duration-700 ease-out" />
               </a>
             ))}
           </nav>

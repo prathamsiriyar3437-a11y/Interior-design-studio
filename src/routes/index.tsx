@@ -385,12 +385,14 @@ function Services() {
 
 /* ---------------- PORTFOLIO ---------------- */
 const PROJECTS = [
-  { img: foyerGrand, title: "Grand Teakwood Foyer", cat: "Luxury Villas", span: "row-span-2" },
+  { img: foyerGrand, title: "Illuminated Teakwood Foyer", cat: "Luxury Villas", span: "row-span-2" },
   { img: pKitchen, title: "Onyx Modular Kitchen", cat: "Kitchens" },
   { img: bedroomMaster, title: "Walnut Master Suite", cat: "Bedrooms" },
   { img: pDining, title: "Crystal Dining Hall", cat: "Living Rooms", span: "row-span-2" },
   { img: bedroomArch, title: "Arched Floral Bedroom", cat: "Bedrooms" },
+  { img: studyNook, title: "Teak Study Nook", cat: "Apartments" },
   { img: pOffice, title: "Heritage Office", cat: "Offices" },
+  { img: windowSeat, title: "Sunlit Window Lounge", cat: "Apartments" },
   { img: pVilla, title: "Palm Grove Villa", cat: "Luxury Villas" },
   { img: pWardrobe, title: "Aurora Walk-in", cat: "Apartments" },
 ];

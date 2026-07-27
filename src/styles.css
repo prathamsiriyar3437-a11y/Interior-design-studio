@@ -75,11 +75,27 @@
   --border: oklch(0.9 0.01 80);
   --input: oklch(0.9 0.01 80);
   --ring: oklch(0.78 0.14 82);
-  --gold: oklch(0.78 0.14 82);         /* #C9A227 */
+  --gold: oklch(0.78 0.14 82);         /* champagne gold */
   --gold-soft: oklch(0.88 0.09 85);
   --charcoal: oklch(0.22 0.005 60);
   --beige: oklch(0.94 0.02 80);
+  --emerald: oklch(0.42 0.09 165);
+  --forest: oklch(0.32 0.07 160);
+  --sage: oklch(0.78 0.04 150);
+  --burgundy: oklch(0.36 0.11 20);
+  --terracotta: oklch(0.62 0.13 45);
+  --rust: oklch(0.5 0.14 45);
+  --navy: oklch(0.3 0.07 260);
+  --teal: oklch(0.5 0.08 200);
+  --espresso: oklch(0.28 0.03 55);
+  --champagne: oklch(0.92 0.05 88);
+  --brass: oklch(0.72 0.1 90);
+  --copper: oklch(0.63 0.12 55);
+  --ivory: oklch(0.975 0.012 85);
+  --sand: oklch(0.93 0.03 80);
+  --stone: oklch(0.86 0.02 75);
 }
+
 
 .dark {
   --background: oklch(0.14 0.005 60);

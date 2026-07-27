@@ -121,3 +121,27 @@
   background: linear-gradient(90deg, transparent, var(--color-gold), transparent);
   height: 1px;
 }
+
+@utility ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 15% 10%, color-mix(in oklab, var(--color-gold) 22%, transparent), transparent 70%),
+    radial-gradient(55% 45% at 85% 20%, color-mix(in oklab, var(--color-gold-soft) 18%, transparent), transparent 70%),
+    radial-gradient(70% 60% at 50% 100%, color-mix(in oklab, var(--color-foreground) 12%, transparent), transparent 70%),
+    var(--color-background);
+}
+@utility glass-panel {
+  background: color-mix(in oklab, var(--color-background) 45%, transparent);
+  backdrop-filter: blur(28px) saturate(150%);
+  border: 1px solid color-mix(in oklab, var(--color-foreground) 8%, transparent);
+  box-shadow: 0 30px 80px -40px color-mix(in oklab, var(--color-foreground) 45%, transparent);
+}
+@utility glass-panel-dark {
+  background: color-mix(in oklab, black 45%, transparent);
+  backdrop-filter: blur(28px) saturate(150%);
+  border: 1px solid color-mix(in oklab, white 12%, transparent);
+  box-shadow: 0 30px 80px -40px rgba(0,0,0,0.6);
+}

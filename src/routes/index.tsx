@@ -64,8 +64,8 @@ const WA = "918050805046";
 const ADDRESS = "Near Canara Springs, Maroli, Mangaluru, Karnataka 575005";
 
 const NAV = [
-  ["Home", "home"], ["About", "about"], ["Services", "services"],
-  ["Portfolio", "portfolio"], ["Process", "process"],
+  ["Home", "home"], ["Portfolio", "portfolio"], ["About", "about"],
+  ["Services", "services"], ["Process", "process"],
   ["Testimonials", "testimonials"], ["FAQ", "faq"], ["Contact", "contact"],
 ] as const;
 
@@ -110,11 +110,12 @@ function Home() {
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 20 });
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      <div aria-hidden className="ambient-bg" />
       <motion.div style={{ scaleX: progress }} className="fixed top-0 left-0 right-0 h-[2px] bg-gold z-[60] origin-left" />
 
       {/* NAV */}
-      <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? "glass shadow-[0_10px_40px_-20px_rgba(0,0,0,0.25)]" : ""}`}>
+      <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 glass ${scrolled ? "shadow-[0_10px_40px_-20px_rgba(0,0,0,0.25)]" : "bg-transparent border-transparent backdrop-blur-md"}`}>
         <div className="max-w-7xl mx-auto px-5 lg:px-10 flex items-center justify-between h-20">
           <button onClick={() => goTo("home")} className="flex items-center gap-2 group">
             <span className="grid place-items-center h-10 w-10 rounded-full border border-gold text-gold font-display text-xl">I</span>
@@ -790,10 +791,15 @@ function Footer() {
 
 /* ---------------- primitives ---------------- */
 function Section({ id, children, tone }: { id?: string; children: React.ReactNode; tone?: "secondary" | "dark" }) {
-  const bg = tone === "secondary" ? "bg-secondary/40" : tone === "dark" ? "bg-charcoal text-white" : "";
+  const tint =
+    tone === "secondary"
+      ? "glass-panel"
+      : tone === "dark"
+        ? "glass-panel-dark text-white"
+        : "glass-panel";
   return (
-    <section id={id} className={`py-24 lg:py-32 px-6 lg:px-16 ${bg}`}>
-      <div className="max-w-7xl mx-auto">{children}</div>
+    <section id={id} className="relative py-12 lg:py-16 px-4 sm:px-6 lg:px-10">
+      <div className={`max-w-7xl mx-auto rounded-3xl px-6 py-16 sm:px-10 lg:px-14 lg:py-24 ${tint}`}>{children}</div>
     </section>
   );
 }

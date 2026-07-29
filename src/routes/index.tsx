@@ -841,9 +841,9 @@ function Slider({ beforeImg, afterImg }: { beforeImg: string; afterImg: string }
   return (
     <div ref={wrap} style={{ ["--pos" as string]: "50%" }}
       className="relative aspect-[16/9] rounded-3xl overflow-hidden select-none shadow-2xl">
-      <img src={afterImg} alt="After the interior transformation" loading="lazy" decoding="async" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+      <img src={afterImg} alt="After the interior transformation" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0 overflow-hidden" style={{ clipPath: "inset(0 calc(100% - var(--pos)) 0 0)" }}>
-        <img src={beforeImg} alt="Before the interior transformation" loading="lazy" decoding="async" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+        <img src={beforeImg} alt="Before the interior transformation" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
       </div>
       <div className="absolute top-4 left-4 frosted-dark text-white px-3 py-1 rounded-full text-xs tracking-widest">BEFORE</div>
       <div className="absolute top-4 right-4 frosted-dark text-white px-3 py-1 rounded-full text-xs tracking-widest">AFTER</div>

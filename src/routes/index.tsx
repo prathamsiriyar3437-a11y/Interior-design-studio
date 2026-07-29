@@ -390,7 +390,7 @@ function About() {
   return (
     <Section id="about" tone="warm">
       <div className="grid lg:grid-cols-2 gap-16 items-center">
-        <motion.div initial={{ opacity: 0, x: -24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 1, ease: EASE }}>
+        <motion.div>
           <Kicker>About the Studio</Kicker>
           <h2 className="mt-4 text-4xl lg:text-6xl font-display leading-tight">
             Designing Spaces <span className="italic" style={{ color: "var(--color-terracotta)" }}>With Purpose.</span>
@@ -427,7 +427,7 @@ function About() {
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 1, ease: EASE }} className="relative">
+        <motion.div className="relative">
           <div className="grid grid-cols-2 gap-4">
             <img src={pVilla} alt="Villa interior in Mangalore" loading="lazy" decoding="async" className="rounded-3xl aspect-[3/4] object-cover w-full" />
             <div className="pt-12 space-y-4">
@@ -464,7 +464,6 @@ function Services() {
       <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {SERVICES.map((s, i) => (
           <motion.article key={s.name}
-            initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 1, ease: EASE }}
             className="group relative overflow-hidden rounded-3xl min-h-[340px] flex flex-col justify-end">
             <img src={s.img} alt={s.name} loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1600ms] ease-out group-hover:scale-[1.06]" />
             <div className="absolute inset-0 transition-opacity duration-700" style={{ background: `linear-gradient(to top, ${s.tint} 88%, transparent 100%)`, opacity: 0.82 }} />
@@ -794,7 +793,7 @@ function Showroom() {
       <div className="max-w-7xl mx-auto relative overflow-hidden rounded-3xl min-h-[620px] flex items-end">
         <img src={hero} alt="Our interior design studio and showroom in Mangalore" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, color-mix(in oklab, var(--color-espresso) 90%, transparent), transparent 75%)" }} />
-        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE }}
+        <motion.div
           className="relative w-full p-6 sm:p-10 lg:p-14">
           <div className="max-w-2xl arch-glass rounded-3xl p-8 text-white">
             <Kicker>Experience Our Space</Kicker>
@@ -810,7 +809,6 @@ function Showroom() {
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[pWardrobe, pDining, pKitchen, pOffice].map((img, i) => (
               <motion.img key={i} src={img} alt="Showroom detail" loading="lazy" decoding="async"
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.9, ease: EASE }}
                 className="rounded-2xl aspect-[4/3] object-cover w-full" />
             ))}
           </div>
@@ -894,7 +892,7 @@ function Products() {
 
       <div ref={scroller} className="mt-12 flex gap-5 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-2 -mx-2 px-2">
         {PRODUCTS.map((p, i) => (
-          <motion.article key={p.name} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06, duration: 0.9, ease: EASE }}
+          <motion.article key={p.name}
             className="group snap-start shrink-0 w-[280px] sm:w-[320px]">
             <div className="relative overflow-hidden rounded-3xl aspect-[4/5]">
               <img src={p.img} alt={p.name} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
@@ -925,7 +923,7 @@ function WhyUs() {
       <Header light kicker="Why choose us" title="A studio built on trust" sub="Nine reasons clients recommend us — and come back for their next space." />
       <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map(([t, Icon], i) => (
-          <motion.div key={t} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07, duration: 0.9, ease: EASE }}
+          <motion.div key={t}
             className="frosted-dark rounded-2xl p-6 flex items-center gap-4 text-white hover:border-gold transition duration-700">
             <div className="grid place-items-center h-12 w-12 rounded-xl bg-gold text-black shrink-0"><Icon className="h-5 w-5" /></div>
             <div className="font-display text-xl">{t}</div>
@@ -955,7 +953,7 @@ function Process() {
         <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gold to-transparent hidden lg:block" />
         <div className="space-y-8 lg:space-y-16">
           {STEPS.map(([t, d], i) => (
-            <motion.div key={t} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.9, ease: EASE }}
+            <motion.div key={t}
               className={`grid lg:grid-cols-2 gap-6 items-center ${i % 2 ? "lg:[direction:rtl]" : ""}`}>
               <div className="[direction:ltr]">
                 <div className="frosted rounded-3xl p-8 hover:border-gold transition duration-700">

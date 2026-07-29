@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "motion/react";
+import { motion, useScroll, useSpring, AnimatePresence } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PerfProvider, usePerf } from "@/lib/perf";
 import { AmbientBackground } from "@/components/AmbientBackground";

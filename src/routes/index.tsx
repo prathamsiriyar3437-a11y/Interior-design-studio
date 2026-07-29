@@ -698,30 +698,31 @@ function Portfolio() {
     <Section id="portfolio" tone="dark">
       <Header light kicker="Portfolio" title="Our work, in detail" sub="Homes, workplaces, custom pieces and our own showroom — a growing record of what we build in Mangalore." />
 
-      <div className="mt-10 flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
+      <div className="mt-8 sm:mt-10 flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
         {CATS.map(c => (
           <button key={c} onClick={() => setCat(c)}
-            className={`shrink-0 px-4 py-2 rounded-full text-sm border transition duration-500 ${cat === c ? "bg-gold text-black border-gold" : "frosted-dark text-white/80 hover:text-white hover:border-gold/60"}`}>
+            className={`shrink-0 px-4 py-2.5 min-h-[44px] rounded-full text-sm border transition duration-500 active:scale-95 ${cat === c ? "bg-gold text-black border-gold" : "frosted-dark text-white/80 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:border-gold/60"}`}>
             {c}
           </button>
         ))}
       </div>
 
-      <motion.div layout className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-[220px] sm:auto-rows-[240px] gap-3 sm:gap-4">
+      <motion.div layout className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-[300px] sm:auto-rows-[240px] gap-4">
         <AnimatePresence mode="popLayout">
           {filtered.map((p, i) => (
             <motion.button key={p.title} layout onClick={() => setOpen(p)}
               initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ delay: i * 0.05, duration: 0.9, ease: EASE }}
+              whileTap={{ scale: 0.985 }}
+              transition={{ delay: i * 0.04, duration: 0.6, ease: EASE }}
               className={`group relative overflow-hidden rounded-3xl text-left ${p.span ?? ""}`}>
               <img src={p.cover} alt={p.title} loading="lazy" decoding="async"
-                className="h-full w-full object-cover saturate-[0.95] transition-all duration-[1500ms] ease-out group-hover:scale-[1.06] group-hover:saturate-100" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-700" />
-              <div className="pointer-events-none absolute inset-3 rounded-2xl border border-white/0 group-hover:border-white/25 transition-all duration-700" />
+                className="h-full w-full object-cover saturate-[0.95] transition-all duration-[1200ms] ease-out [@media(hover:hover)]:group-hover:scale-[1.06] [@media(hover:hover)]:group-hover:saturate-100" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent opacity-80 [@media(hover:hover)]:opacity-70 [@media(hover:hover)]:group-hover:opacity-90 transition-opacity duration-700" />
+              <div className="pointer-events-none absolute inset-3 rounded-2xl border border-white/0 [@media(hover:hover)]:group-hover:border-white/25 transition-all duration-700" />
               <div className="absolute inset-x-0 bottom-0 p-5 text-white">
                 <div className="text-[10px] tracking-[0.3em] uppercase text-gold">{p.cat}</div>
                 <div className="mt-1 font-display text-xl lg:text-2xl">{p.title}</div>
-                <div className="mt-2 flex items-center gap-2 text-xs text-white/0 group-hover:text-white/85 translate-y-2 group-hover:translate-y-0 transition-all duration-700">
+                <div className="mt-2 flex items-center gap-2 text-xs text-white/85 [@media(hover:hover)]:text-white/0 [@media(hover:hover)]:translate-y-2 [@media(hover:hover)]:group-hover:text-white/85 [@media(hover:hover)]:group-hover:translate-y-0 transition-all duration-700">
                   View Project <ArrowRight className="h-3.5 w-3.5" />
                 </div>
               </div>
@@ -729,6 +730,7 @@ function Portfolio() {
           ))}
         </AnimatePresence>
       </motion.div>
+
 
       <ProjectDetail project={open} onClose={() => setOpen(null)} onOpen={setOpen} />
     </Section>

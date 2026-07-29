@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { PerfProvider, usePerf } from "@/lib/perf";
+import { AmbientBackground } from "@/components/AmbientBackground";
 import {
   Phone, MapPin, Star, ArrowRight, ArrowLeft, ArrowUp, MessageCircle, Menu, X, Moon, Sun,
   Sofa, Briefcase, Building2, Layers, Lightbulb, Hammer, Box, Wand2, ShieldCheck, Sparkles,
@@ -58,8 +60,16 @@ export const Route = createFileRoute("/")({
       }),
     }],
   }),
-  component: Home,
+  component: HomeRoute,
 });
+
+function HomeRoute() {
+  return (
+    <PerfProvider>
+      <Home />
+    </PerfProvider>
+  );
+}
 
 const PHONE = "08050805046";
 const WA = "918050805046";
@@ -113,7 +123,7 @@ function Home() {
 
   return (
     <div className="min-h-screen relative">
-      <div aria-hidden className="hero-ambient fixed inset-0 -z-10 pointer-events-none" />
+      <AmbientBackground />
       <motion.div style={{ scaleX: progress }} className="fixed top-0 left-0 right-0 h-[2px] bg-gold z-[60] origin-left" />
 
       {/* NAV */}
@@ -221,14 +231,17 @@ function Home() {
 /* ---------------- HERO ---------------- */
 function Hero({ goTo }: { goTo: (id: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
+  const { parallax } = usePerf();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], [0, 180]);
-  const opacity = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
+  const yRaw = useTransform(scrollYProgress, [0, 1], [0, 180]);
+  const opacityRaw = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
+  const y = parallax ? yRaw : undefined;
+  const opacity = parallax ? opacityRaw : undefined;
 
   return (
     <section id="home" ref={ref} className="relative min-h-screen overflow-hidden">
       <motion.div style={{ y }} className="absolute inset-0">
-        <img src={hero} alt="Luxury living room interior designed in Mangalore" className="h-full w-full object-cover" width={1920} height={1200} />
+        <img src={hero} alt="Luxury living room interior designed in Mangalore" fetchPriority="high" decoding="async" className="h-full w-full object-cover" width={1920} height={1200} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(150deg, color-mix(in oklab, var(--color-espresso) 72%, transparent), color-mix(in oklab, var(--color-forest) 42%, transparent) 55%, rgba(0,0,0,0.78))" }} />
       </motion.div>
 
@@ -289,21 +302,42 @@ function Hero({ goTo }: { goTo: (id: string) => void }) {
 
 function Magnetic({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const [d, setD] = useState({ x: 0, y: 0 });
+  const { tier, reducedMotion } = usePerf();
+  const state = useRef({ tx: 0, ty: 0, x: 0, y: 0, raf: 0 });
+  const enabled = !reducedMotion && tier !== "performance";
+
+  const loop = useCallback(() => {
+    const s = state.current;
+    s.x += (s.tx - s.x) * 0.16;
+    s.y += (s.ty - s.y) * 0.16;
+    if (ref.current) ref.current.style.transform = `translate3d(${s.x.toFixed(2)}px, ${s.y.toFixed(2)}px, 0)`;
+    if (Math.abs(s.tx - s.x) > 0.15 || Math.abs(s.ty - s.y) > 0.15) s.raf = requestAnimationFrame(loop);
+    else s.raf = 0;
+  }, []);
+
+  const start = useCallback(() => {
+    if (!state.current.raf) state.current.raf = requestAnimationFrame(loop);
+  }, [loop]);
+
+  useEffect(() => () => { if (state.current.raf) cancelAnimationFrame(state.current.raf); }, []);
+
+  if (!enabled) return <span className="inline-block">{children}</span>;
+
   return (
-    <motion.span
+    <span
       ref={ref}
-      onMouseMove={(e) => {
-        const r = ref.current!.getBoundingClientRect();
-        setD({ x: (e.clientX - r.left - r.width / 2) * 0.18, y: (e.clientY - r.top - r.height / 2) * 0.25 });
+      className="inline-block gpu"
+      onPointerMove={(e) => {
+        if (e.pointerType !== "mouse" || !ref.current) return;
+        const r = ref.current.getBoundingClientRect();
+        state.current.tx = (e.clientX - r.left - r.width / 2) * 0.18;
+        state.current.ty = (e.clientY - r.top - r.height / 2) * 0.25;
+        start();
       }}
-      onMouseLeave={() => setD({ x: 0, y: 0 })}
-      animate={{ x: d.x, y: d.y }}
-      transition={{ type: "spring", stiffness: 200, damping: 18 }}
-      className="inline-block"
+      onPointerLeave={() => { state.current.tx = 0; state.current.ty = 0; start(); }}
     >
       {children}
-    </motion.span>
+    </span>
   );
 }
 
@@ -395,10 +429,10 @@ function About() {
 
         <motion.div initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 1, ease: EASE }} className="relative">
           <div className="grid grid-cols-2 gap-4">
-            <img src={pVilla} alt="Villa interior in Mangalore" loading="lazy" className="rounded-3xl aspect-[3/4] object-cover w-full" />
+            <img src={pVilla} alt="Villa interior in Mangalore" loading="lazy" decoding="async" className="rounded-3xl aspect-[3/4] object-cover w-full" />
             <div className="pt-12 space-y-4">
-              <img src={bedroomMaster} alt="Master bedroom interior" loading="lazy" className="rounded-3xl aspect-square object-cover w-full" />
-              <img src={pKitchen} alt="Modular kitchen interior" loading="lazy" className="rounded-3xl aspect-square object-cover w-full" />
+              <img src={bedroomMaster} alt="Master bedroom interior" loading="lazy" decoding="async" className="rounded-3xl aspect-square object-cover w-full" />
+              <img src={pKitchen} alt="Modular kitchen interior" loading="lazy" decoding="async" className="rounded-3xl aspect-square object-cover w-full" />
             </div>
           </div>
           <div className="absolute -bottom-6 -left-2 sm:-left-6 rounded-2xl p-5 text-white shadow-xl tinted-emerald">
@@ -432,7 +466,7 @@ function Services() {
           <motion.article key={s.name}
             initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 1, ease: EASE }}
             className="group relative overflow-hidden rounded-3xl min-h-[340px] flex flex-col justify-end">
-            <img src={s.img} alt={s.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1600ms] ease-out group-hover:scale-[1.06]" />
+            <img src={s.img} alt={s.name} loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1600ms] ease-out group-hover:scale-[1.06]" />
             <div className="absolute inset-0 transition-opacity duration-700" style={{ background: `linear-gradient(to top, ${s.tint} 88%, transparent 100%)`, opacity: 0.82 }} />
             <div className="relative p-7 text-white">
               <div className="grid place-items-center h-12 w-12 rounded-2xl frosted-dark">
@@ -638,7 +672,7 @@ function Portfolio() {
               initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }}
               transition={{ delay: i * 0.05, duration: 0.9, ease: EASE }}
               className={`group relative overflow-hidden rounded-3xl text-left ${p.span ?? ""}`}>
-              <img src={p.cover} alt={p.title} loading="lazy"
+              <img src={p.cover} alt={p.title} loading="lazy" decoding="async"
                 className="h-full w-full object-cover saturate-[0.95] transition-all duration-[1500ms] ease-out group-hover:scale-[1.06] group-hover:saturate-100" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-700" />
               <div className="pointer-events-none absolute inset-3 rounded-2xl border border-white/0 group-hover:border-white/25 transition-all duration-700" />
@@ -758,7 +792,7 @@ function Showroom() {
   return (
     <section id="showroom" className="relative py-12 lg:py-16 px-4 sm:px-6 lg:px-10">
       <div className="max-w-7xl mx-auto relative overflow-hidden rounded-3xl min-h-[620px] flex items-end">
-        <img src={hero} alt="Our interior design studio and showroom in Mangalore" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+        <img src={hero} alt="Our interior design studio and showroom in Mangalore" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, color-mix(in oklab, var(--color-espresso) 90%, transparent), transparent 75%)" }} />
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE }}
           className="relative w-full p-6 sm:p-10 lg:p-14">
@@ -775,7 +809,7 @@ function Showroom() {
           </div>
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[pWardrobe, pDining, pKitchen, pOffice].map((img, i) => (
-              <motion.img key={i} src={img} alt="Showroom detail" loading="lazy"
+              <motion.img key={i} src={img} alt="Showroom detail" loading="lazy" decoding="async"
                 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.9, ease: EASE }}
                 className="rounded-2xl aspect-[4/3] object-cover w-full" />
             ))}
@@ -788,19 +822,37 @@ function Showroom() {
 
 /* ---------------- BEFORE / AFTER ---------------- */
 function Slider({ beforeImg, afterImg }: { beforeImg: string; afterImg: string }) {
-  const [pos, setPos] = useState(50);
+  const wrap = useRef<HTMLDivElement>(null);
+  const frame = useRef(0);
+  const next = useRef(50);
+
+  // High-frequency drag updates go straight to a CSS variable via rAF — no re-renders.
+  const onInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    next.current = +e.target.value;
+    if (frame.current) return;
+    frame.current = requestAnimationFrame(() => {
+      frame.current = 0;
+      wrap.current?.style.setProperty("--pos", `${next.current}%`);
+    });
+  }, []);
+
+  useEffect(() => () => { if (frame.current) cancelAnimationFrame(frame.current); }, []);
+
   return (
-    <div className="relative aspect-[16/9] rounded-3xl overflow-hidden select-none shadow-2xl">
-      <img src={afterImg} alt="After the interior transformation" className="absolute inset-0 h-full w-full object-cover" />
-      <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-        <img src={beforeImg} alt="Before the interior transformation" className="absolute inset-0 h-full w-full object-cover" />
+    <div ref={wrap} style={{ ["--pos" as string]: "50%" }}
+      className="relative aspect-[16/9] rounded-3xl overflow-hidden select-none shadow-2xl">
+      <img src={afterImg} alt="After the interior transformation" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute inset-0 overflow-hidden" style={{ clipPath: "inset(0 calc(100% - var(--pos)) 0 0)" }}>
+        <img src={beforeImg} alt="Before the interior transformation" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
       </div>
       <div className="absolute top-4 left-4 frosted-dark text-white px-3 py-1 rounded-full text-xs tracking-widest">BEFORE</div>
       <div className="absolute top-4 right-4 frosted-dark text-white px-3 py-1 rounded-full text-xs tracking-widest">AFTER</div>
-      <input aria-label="Reveal before and after" type="range" min={0} max={100} value={pos} onChange={(e) => setPos(+e.target.value)} className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize" />
-      <div className="absolute top-0 bottom-0 w-0.5 bg-gold pointer-events-none" style={{ left: `${pos}%` }}>
-        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-12 w-12 rounded-full bg-gold text-black grid place-items-center shadow-xl">
-          <ArrowLeft className="h-3.5 w-3.5 -mr-0.5" /><ArrowRight className="h-3.5 w-3.5 -ml-0.5" />
+      <input aria-label="Reveal before and after" type="range" min={0} max={100} defaultValue={50} onChange={onInput} className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize" />
+      <div className="gpu absolute inset-0 pointer-events-none" style={{ transform: "translate3d(var(--pos), 0, 0)" }}>
+        <div className="absolute top-0 bottom-0 left-0 w-0.5 bg-gold">
+          <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-12 w-12 rounded-full bg-gold text-black grid place-items-center shadow-xl">
+            <ArrowLeft className="h-3.5 w-3.5 -mr-0.5" /><ArrowRight className="h-3.5 w-3.5 -ml-0.5" />
+          </div>
         </div>
       </div>
     </div>
@@ -845,7 +897,7 @@ function Products() {
           <motion.article key={p.name} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06, duration: 0.9, ease: EASE }}
             className="group snap-start shrink-0 w-[280px] sm:w-[320px]">
             <div className="relative overflow-hidden rounded-3xl aspect-[4/5]">
-              <img src={p.img} alt={p.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
+              <img src={p.img} alt={p.name} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent opacity-70" />
               <div className="absolute top-4 left-4 frosted-dark text-white text-[10px] tracking-[0.25em] uppercase px-3 py-1 rounded-full">{p.tag}</div>
             </div>

@@ -163,22 +163,43 @@ function Home() {
         </div>
       </header>
 
-      {/* Mobile menu */}
+      {/* Mobile navigation — full-screen bottom sheet */}
       <AnimatePresence>
         {menu && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-md lg:hidden" onClick={() => setMenu(false)}>
-            <motion.aside initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 26 }} onClick={(e) => e.stopPropagation()} className="absolute right-0 top-0 bottom-0 w-80 max-w-[85vw] arch-glass bg-background/90 p-8 flex flex-col">
-              <button onClick={() => setMenu(false)} aria-label="Close menu" className="self-end grid place-items-center h-10 w-10 rounded-full border border-border"><X className="h-4 w-4" /></button>
-              <nav className="mt-8 flex flex-col gap-1">
-                {NAV.map(([l, id]) => (
-                  <button key={id} onClick={() => goTo(id)} className="py-3 border-b border-border font-display text-2xl hover:text-gold transition text-left">{l}</button>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-md lg:hidden" onClick={() => setMenu(false)}>
+            <motion.aside
+              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 320, damping: 34 }}
+              drag="y" dragConstraints={{ top: 0, bottom: 0 }} dragElastic={{ top: 0, bottom: 0.4 }}
+              onDragEnd={(_, info) => { if (info.offset.y > 90) setMenu(false); }}
+              onClick={(e) => e.stopPropagation()}
+              className="absolute inset-x-0 bottom-0 max-h-[92svh] overflow-y-auto rounded-t-[2rem] arch-glass bg-background/95 px-6 pt-3 pb-8 flex flex-col">
+              <span className="mx-auto h-1.5 w-12 rounded-full bg-foreground/20" />
+              <div className="mt-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="grid place-items-center h-9 w-9 rounded-full border border-gold text-gold font-display text-lg">I</span>
+                  <span className="font-display text-base">Interior Design Studio</span>
+                </div>
+                <button onClick={() => setMenu(false)} aria-label="Close menu" className="grid place-items-center h-11 w-11 rounded-full border border-border active:scale-95 transition"><X className="h-4 w-4" /></button>
+              </div>
+              <nav className="mt-4 flex flex-col">
+                {MOBILE_NAV.map(([l, id]) => (
+                  <button key={id} onClick={() => goTo(id)}
+                    className="py-4 min-h-[56px] border-b border-border font-display text-2xl text-left active:text-gold transition flex items-center justify-between">
+                    {l} <ArrowRight className="h-4 w-4 text-gold/70" />
+                  </button>
                 ))}
               </nav>
-              <button onClick={() => goTo("consultation")} className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black px-5 py-3 font-semibold">Book a Consultation</button>
+              <button onClick={() => goTo("consultation")} className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black px-5 py-4 min-h-[56px] font-semibold active:scale-[0.98] transition">
+                Start Your Design Journey <ArrowRight className="h-4 w-4" />
+              </button>
+              <a href={`tel:${PHONE}`} className="mt-3 inline-flex items-center justify-center gap-2 rounded-full border border-border px-5 py-3.5 font-semibold"><Phone className="h-4 w-4" /> {PHONE}</a>
             </motion.aside>
           </motion.div>
         )}
       </AnimatePresence>
+
 
       {/* Glass transition veil */}
       <AnimatePresence>

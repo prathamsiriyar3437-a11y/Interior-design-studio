@@ -462,36 +462,66 @@ function About() {
 
 /* ---------------- SERVICES ---------------- */
 const SERVICES = [
-  { icon: Sofa, name: "Residential Interiors", desc: "Homes, apartments and villas designed around how you live.", img: pBedroom, tint: "var(--color-emerald)" },
-  { icon: Building2, name: "Commercial Interiors", desc: "Offices, retail, showrooms and hospitality fit-outs.", img: pOffice, tint: "var(--color-navy)" },
-  { icon: PenTool, name: "Custom Interior Design", desc: "Bespoke joinery, feature walls and one-off furniture.", img: studyNook, tint: "var(--color-terracotta)" },
-  { icon: Ruler, name: "Interior Consultation", desc: "Layouts, palettes and material direction, on your site.", img: windowSeat, tint: "var(--color-teal)" },
-  { icon: Box, name: "Furniture & Products", desc: "Curated furniture, lighting, décor and finishes.", img: pWardrobe, tint: "var(--color-copper)" },
-  { icon: Wand2, name: "Complete Interior Solutions", desc: "Turnkey delivery — one team, one contract, keys handed over.", img: pDining, tint: "var(--color-burgundy)" },
+  { icon: Sofa, name: "Residential Interiors", desc: "Homes, apartments and villas designed around how you live.", img: pBedroom, tint: "var(--color-emerald)", gallery: [pBedroom, bedroomMaster, windowSeat], points: ["Space planning & layouts", "Custom wardrobes and beds", "Lighting & false ceiling", "Turnkey handover"] },
+  { icon: Building2, name: "Commercial Interiors", desc: "Offices, retail, showrooms and hospitality fit-outs.", img: pOffice, tint: "var(--color-navy)", gallery: [pOffice, pDining, foyerGrand], points: ["Workstation planning", "Cabin & reception joinery", "Acoustics and lighting", "Fast-track execution"] },
+  { icon: PenTool, name: "Custom Interior Design", desc: "Bespoke joinery, feature walls and one-off furniture.", img: studyNook, tint: "var(--color-terracotta)", gallery: [studyNook, bedroomArch, pWardrobe], points: ["Bespoke joinery", "Feature walls & arches", "One-off furniture", "Material detailing"] },
+  { icon: Ruler, name: "Interior Consultation", desc: "Layouts, palettes and material direction, on your site.", img: windowSeat, tint: "var(--color-teal)", gallery: [windowSeat, pVilla, pKitchen], points: ["On-site measurement", "Layout options", "Colour & material palette", "Honest budget range"] },
+  { icon: Box, name: "Furniture & Products", desc: "Curated furniture, lighting, décor and finishes.", img: pWardrobe, tint: "var(--color-copper)", gallery: [pWardrobe, pDining, pKitchen], points: ["Curated furniture", "Sculptural lighting", "Décor & panelling", "Showroom selection"] },
+  { icon: Wand2, name: "Complete Interior Solutions", desc: "Turnkey delivery — one team, one contract, keys handed over.", img: pDining, tint: "var(--color-burgundy)", gallery: [pDining, pVilla, pOffice], points: ["Single point of contact", "3D visualisation", "Site supervision", "Warranty support"] },
 ];
 
 function Services() {
+  const [open, setOpen] = useState<string | null>(null);
   return (
     <Section id="services" tone="pearl">
-      <Header kicker="What we do" title="Services crafted with care" sub="From a single room to a full turnkey space — delivered end to end by one accountable team." />
-      <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {SERVICES.map((s, i) => (
-          <motion.article key={s.name}
-            className="group relative overflow-hidden rounded-3xl min-h-[340px] flex flex-col justify-end">
-            <img src={s.img} alt={s.name} loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1600ms] ease-out group-hover:scale-[1.06]" />
-            <div className="absolute inset-0 transition-opacity duration-700" style={{ background: `linear-gradient(to top, ${s.tint} 88%, transparent 100%)`, opacity: 0.82 }} />
-            <div className="relative p-7 text-white">
-              <div className="grid place-items-center h-12 w-12 rounded-2xl frosted-dark">
-                <s.icon className="h-5 w-5 text-gold" />
-              </div>
-              <h3 className="mt-5 font-display text-2xl">{s.name}</h3>
-              <p className="mt-2 text-sm text-white/80 leading-relaxed">{s.desc}</p>
-              <div className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-gold">
-                Discuss this <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition duration-500" />
-              </div>
-            </div>
-          </motion.article>
-        ))}
+      <Header kicker="What we do" title="Services crafted with care" sub="Tap a service to see what's included." />
+      <div className="mt-12 sm:mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+        {SERVICES.map((s) => {
+          const isOpen = open === s.name;
+          return (
+            <motion.article key={s.name} layout transition={{ duration: 0.5, ease: EASE }}
+              className={`group relative overflow-hidden rounded-3xl flex flex-col justify-end ${isOpen ? "sm:col-span-2 lg:col-span-2 min-h-[440px]" : "min-h-[320px] sm:min-h-[340px]"}`}>
+              <img src={s.img} alt={s.name} loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out [@media(hover:hover)]:group-hover:scale-[1.06]" />
+              <div className="absolute inset-0 transition-opacity duration-700" style={{ background: `linear-gradient(to top, ${s.tint} 88%, transparent 100%)`, opacity: isOpen ? 0.92 : 0.82 }} />
+              <button
+                onClick={() => setOpen(isOpen ? null : s.name)}
+                aria-expanded={isOpen}
+                className="relative w-full text-left p-6 sm:p-7 text-white">
+                <div className="grid place-items-center h-12 w-12 rounded-2xl frosted-dark">
+                  <s.icon className="h-5 w-5 text-gold" />
+                </div>
+                <h3 className="mt-5 font-display text-2xl">{s.name}</h3>
+                <p className="mt-2 text-sm text-white/80 leading-relaxed">{s.desc}</p>
+                <div className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-gold">
+                  {isOpen ? "Close" : "Discuss this"} <ArrowRight className={`h-3.5 w-3.5 transition duration-500 ${isOpen ? "rotate-90" : "[@media(hover:hover)]:group-hover:translate-x-1"}`} />
+                </div>
+              </button>
+              <AnimatePresence initial={false}>
+                {isOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.45, ease: EASE }}
+                    className="relative overflow-hidden text-white">
+                    <div className="px-6 sm:px-7 pb-7">
+                      <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-white/85">
+                        {s.points.map(pt => <li key={pt} className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-gold shrink-0 mt-0.5" />{pt}</li>)}
+                      </ul>
+                      <div className="mt-5 flex gap-3 overflow-x-auto no-scrollbar snap-x">
+                        {s.gallery.map((g, k) => (
+                          <img key={k} src={g} alt={`${s.name} example ${k + 1}`} loading="lazy" decoding="async"
+                            className="snap-start shrink-0 h-24 w-36 rounded-2xl object-cover border border-white/20" />
+                        ))}
+                      </div>
+                      <a href="#consultation" className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black px-6 py-3.5 min-h-[52px] font-semibold active:scale-[0.98] transition">
+                        Discuss This Service <ArrowRight className="h-4 w-4" />
+                      </a>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.article>
+          );
+        })}
       </div>
     </Section>
   );

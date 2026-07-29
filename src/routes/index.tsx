@@ -739,41 +739,61 @@ function Portfolio() {
 
 function ProjectDetail({ project, onClose, onOpen }: { project: Project | null; onClose: () => void; onOpen: (p: Project) => void }) {
   const [idx, setIdx] = useState(0);
-  useEffect(() => { setIdx(0); }, [project]);
+  const [full, setFull] = useState(false);
+  const count = project?.gallery.length ?? 0;
+  const prev = useCallback(() => setIdx(i => (i - 1 + count) % count), [count]);
+  const next = useCallback(() => setIdx(i => (i + 1) % count), [count]);
+
+  useEffect(() => { setIdx(0); setFull(false); }, [project]);
   useEffect(() => {
-    const k = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const k = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { if (full) setFull(false); else onClose(); }
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
+    };
     window.addEventListener("keydown", k);
     return () => window.removeEventListener("keydown", k);
-  }, [onClose]);
+  }, [onClose, prev, next, full]);
 
   return (
     <AnimatePresence>
       {project && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5, ease: EASE }}
-          className="fixed inset-0 z-[80] bg-black/85 backdrop-blur-xl overflow-y-auto">
-          <button onClick={onClose} aria-label="Close project" className="fixed top-5 right-5 z-10 grid place-items-center h-12 w-12 rounded-full frosted-dark text-white"><X className="h-5 w-5" /></button>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: EASE }}
+          className="fixed inset-0 z-[80] bg-black/90 backdrop-blur-xl overflow-y-auto overscroll-contain">
+          <button onClick={onClose} aria-label="Close project" className="fixed top-4 right-4 z-20 grid place-items-center h-12 w-12 rounded-full frosted-dark text-white active:scale-95 transition"><X className="h-5 w-5" /></button>
 
-          <motion.article initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} transition={{ duration: 0.7, ease: EASE }}
-            className="max-w-6xl mx-auto px-5 py-16 text-white">
-            <div className="relative rounded-3xl overflow-hidden aspect-[16/10]">
+          <motion.article initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} transition={{ duration: 0.6, ease: EASE }}
+            className="max-w-6xl mx-auto px-4 sm:px-5 pt-16 pb-40 sm:pb-24 text-white">
+            <motion.div
+              className="relative rounded-3xl overflow-hidden aspect-[4/3] sm:aspect-[16/10] touch-pan-y"
+              drag={count > 1 ? "x" : false} dragConstraints={{ left: 0, right: 0 }} dragElastic={0.12}
+              onDragEnd={(_, info) => { if (info.offset.x < -60) next(); else if (info.offset.x > 60) prev(); }}
+            >
               <AnimatePresence mode="wait">
                 <motion.img key={idx} src={project.gallery[idx]} alt={`${project.title} — image ${idx + 1}`}
-                  initial={{ opacity: 0, scale: 1.03 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease: EASE }}
-                  className="absolute inset-0 h-full w-full object-cover" />
+                  initial={{ opacity: 0, scale: 1.03 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5, ease: EASE }}
+                  onClick={() => setFull(true)}
+                  className="absolute inset-0 h-full w-full object-cover cursor-zoom-in" draggable={false} />
               </AnimatePresence>
-              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
-              {project.gallery.length > 1 && (
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+              {count > 1 && (
                 <>
-                  <button aria-label="Previous image" onClick={() => setIdx(i => (i - 1 + project.gallery.length) % project.gallery.length)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 grid place-items-center h-11 w-11 rounded-full frosted-dark"><ArrowLeft className="h-4 w-4" /></button>
-                  <button aria-label="Next image" onClick={() => setIdx(i => (i + 1) % project.gallery.length)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 grid place-items-center h-11 w-11 rounded-full frosted-dark"><ArrowRight className="h-4 w-4" /></button>
+                  <button aria-label="Previous image" onClick={prev}
+                    className="hidden sm:grid absolute left-4 top-1/2 -translate-y-1/2 place-items-center h-11 w-11 rounded-full frosted-dark"><ArrowLeft className="h-4 w-4" /></button>
+                  <button aria-label="Next image" onClick={next}
+                    className="hidden sm:grid absolute right-4 top-1/2 -translate-y-1/2 place-items-center h-11 w-11 rounded-full frosted-dark"><ArrowRight className="h-4 w-4" /></button>
+                  <div className="absolute inset-x-0 bottom-4 flex justify-center gap-1.5 sm:hidden">
+                    {project.gallery.map((_, i) => (
+                      <span key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i === idx ? "w-6 bg-gold" : "w-1.5 bg-white/45"}`} />
+                    ))}
+                  </div>
+                  <div className="absolute top-4 left-4 sm:hidden frosted-dark text-[10px] tracking-[0.25em] uppercase px-3 py-1 rounded-full">Swipe →</div>
                 </>
               )}
-            </div>
+            </motion.div>
 
-            {project.gallery.length > 1 && (
-              <div className="mt-3 flex gap-3 overflow-x-auto no-scrollbar">
+            {count > 1 && (
+              <div className="mt-3 hidden sm:flex gap-3 overflow-x-auto no-scrollbar">
                 {project.gallery.map((g, i) => (
                   <button key={i} onClick={() => setIdx(i)} className={`shrink-0 h-20 w-28 rounded-xl overflow-hidden border transition ${i === idx ? "border-gold" : "border-white/15 opacity-70 hover:opacity-100"}`}>
                     <img src={g} alt="" className="h-full w-full object-cover" />
@@ -782,12 +802,12 @@ function ProjectDetail({ project, onClose, onOpen }: { project: Project | null; 
               </div>
             )}
 
-            <div className="mt-10 grid lg:grid-cols-3 gap-10">
+            <div className="mt-8 sm:mt-10 grid lg:grid-cols-3 gap-8 lg:gap-10">
               <div className="lg:col-span-2">
                 <div className="text-[11px] tracking-[0.35em] uppercase text-gold">{project.cat}</div>
-                <h3 className="mt-3 font-display text-4xl lg:text-5xl">{project.title}</h3>
-                <p className="mt-4 text-white/70 flex items-center gap-2 text-sm"><MapPin className="h-4 w-4 text-gold" /> {project.location}{project.completed && ` · Completed ${project.completed}`}</p>
-                <p className="mt-6 text-lg text-white/85 leading-relaxed">{project.desc}</p>
+                <h3 className="mt-3 font-display text-3xl sm:text-4xl lg:text-5xl">{project.title}</h3>
+                <p className="mt-4 text-white/70 flex items-center gap-2 text-sm"><MapPin className="h-4 w-4 text-gold shrink-0" /> {project.location}{project.completed && ` · Completed ${project.completed}`}</p>
+                <p className="mt-6 text-base sm:text-lg text-white/85 leading-relaxed">{project.desc}</p>
                 <h4 className="mt-8 font-display text-2xl">Design concept</h4>
                 <p className="mt-2 text-white/75 leading-relaxed">{project.concept}</p>
               </div>
@@ -808,23 +828,54 @@ function ProjectDetail({ project, onClose, onOpen }: { project: Project | null; 
 
             <div className="mt-14">
               <h4 className="font-display text-2xl">Related projects</h4>
-              <div className="mt-4 grid sm:grid-cols-3 gap-4">
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                 {PROJECTS.filter(p => p.title !== project.title && p.cat === project.cat).slice(0, 3).map(p => (
-                  <button key={p.title} onClick={() => onOpen(p)} className="group relative rounded-2xl overflow-hidden aspect-[4/3] text-left">
-                    <img src={p.cover} alt={p.title} className="h-full w-full object-cover transition duration-1000 group-hover:scale-105" />
+                  <button key={p.title} onClick={() => onOpen(p)} className="group relative rounded-2xl overflow-hidden aspect-[4/3] text-left active:scale-[0.98] transition">
+                    <img src={p.cover} alt={p.title} loading="lazy" className="h-full w-full object-cover transition duration-1000 [@media(hover:hover)]:group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
-                    <div className="absolute bottom-3 left-4 font-display text-lg">{p.title}</div>
+                    <div className="absolute bottom-3 left-4 right-3 font-display text-base sm:text-lg">{p.title}</div>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="mt-14 rounded-3xl p-10 text-center tinted-emerald">
-              <h4 className="font-display text-3xl lg:text-4xl">Have a space like this?</h4>
+            <div className="mt-14 rounded-3xl p-8 sm:p-10 text-center tinted-emerald">
+              <h4 className="font-display text-2xl sm:text-3xl lg:text-4xl">Have a space like this?</h4>
               <p className="mt-3 text-white/75">Tell us about it — we'll walk you through what's possible.</p>
-              <a href="#consultation" onClick={onClose} className="mt-6 inline-flex items-center gap-2 rounded-full bg-gold text-black px-7 py-3.5 font-semibold">Book a Consultation <ArrowRight className="h-4 w-4" /></a>
+              <a href="#consultation" onClick={onClose} className="mt-6 inline-flex items-center gap-2 rounded-full bg-gold text-black px-7 py-4 min-h-[56px] font-semibold active:scale-[0.98] transition">Start Your Design Journey <ArrowRight className="h-4 w-4" /></a>
             </div>
           </motion.article>
+
+          {/* Sticky action bar */}
+          <div className="fixed bottom-0 inset-x-0 z-20 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] frosted-dark flex gap-2">
+            <a href={`https://wa.me/${WA}`} target="_blank" rel="noopener" aria-label="WhatsApp us" className="grid place-items-center h-[52px] w-[52px] shrink-0 rounded-full border border-white/25 text-white"><MessageCircle className="h-5 w-5" /></a>
+            <a href="#consultation" onClick={onClose} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black min-h-[52px] px-4 font-semibold active:scale-[0.98] transition">
+              Get This Look For My Space <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+
+          {/* Full-screen image viewer */}
+          <AnimatePresence>
+            {full && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
+                className="fixed inset-0 z-[90] bg-black grid place-items-center" onClick={() => setFull(false)}>
+                <motion.img
+                  key={idx} src={project.gallery[idx]} alt={`${project.title} — full view`}
+                  drag={count > 1 ? "x" : false} dragConstraints={{ left: 0, right: 0 }} dragElastic={0.12}
+                  onClick={(e) => e.stopPropagation()}
+                  onDragEnd={(_, info) => { if (info.offset.x < -60) next(); else if (info.offset.x > 60) prev(); }}
+                  className="max-h-[88svh] max-w-full object-contain" draggable={false} />
+                <button onClick={() => setFull(false)} aria-label="Close image" className="absolute top-4 right-4 grid place-items-center h-12 w-12 rounded-full frosted-dark text-white"><X className="h-5 w-5" /></button>
+                {count > 1 && (
+                  <div className="absolute inset-x-0 bottom-6 flex justify-center gap-1.5">
+                    {project.gallery.map((_, i) => (
+                      <span key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i === idx ? "w-6 bg-gold" : "w-1.5 bg-white/45"}`} />
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>

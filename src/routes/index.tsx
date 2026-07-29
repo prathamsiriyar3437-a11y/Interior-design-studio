@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useScroll, useSpring, AnimatePresence } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { FormEvent } from "react";
 import { PerfProvider, usePerf } from "@/lib/perf";
+import { supabase } from "@/lib/supabaseClient";
 import { AmbientBackground } from "@/components/AmbientBackground";
 import {
   Phone, MapPin, Star, ArrowRight, ArrowLeft, ArrowUp, MessageCircle, Menu, X, Moon, Sun,
@@ -1114,6 +1116,39 @@ function Testimonials() {
 /* ---------------- CONSULTATION ---------------- */
 function Consultation() {
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    const form = e.currentTarget;
+    const data = new FormData(form);
+    const payload = {
+      name: String(data.get("name") ?? "").trim(),
+      phone: String(data.get("phone") ?? "").trim(),
+      email: String(data.get("email") ?? "").trim() || null,
+      location: String(data.get("location") ?? "").trim() || null,
+      project_type: String(data.get("type") ?? "").trim() || null,
+      budget: String(data.get("budget") ?? "").trim() || null,
+      message: String(data.get("message") ?? "").trim() || null,
+    };
+    if (!payload.name || !payload.phone) {
+      setError("Please fill in your name and phone number.");
+      return;
+    }
+    setSubmitting(true);
+    const { error: dbError } = await supabase.from("contact_leads").insert([payload]);
+    setSubmitting(false);
+    if (dbError) {
+      setError(dbError.message);
+      return;
+    }
+    form.reset();
+    setSent(true);
+    setTimeout(() => setSent(false), 4000);
+  }
+
   return (
     <section id="consultation" className="relative py-12 lg:py-16 px-4 sm:px-6 lg:px-10">
       <div className="max-w-7xl mx-auto relative overflow-hidden rounded-3xl p-6 sm:p-10 lg:p-16 tinted-emerald">
@@ -1132,7 +1167,7 @@ function Consultation() {
             </div>
           </div>
 
-          <form onSubmit={(e) => { e.preventDefault(); setSent(true); setTimeout(() => setSent(false), 4000); }}
+          <form onSubmit={handleSubmit}
             className="arch-glass rounded-3xl p-7 lg:p-9 space-y-4 text-white">
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="Name" name="name" required />
@@ -1147,8 +1182,9 @@ function Consultation() {
               <Field label="Budget range" name="budget" as="select" options={["Under ₹5L", "₹5L – ₹10L", "₹10L – ₹25L", "₹25L+"]} />
             </div>
             <Field label="Message" name="message" as="textarea" />
-            <button type="submit" className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black px-6 py-4 font-semibold hover:brightness-110 transition">
-              {sent ? <><CheckCircle2 className="h-5 w-5" /> Thank you — we'll be in touch!</> : <>Request a Consultation <Send className="h-4 w-4" /></>}
+            {error && <div className="text-sm text-red-300">{error}</div>}
+            <button type="submit" disabled={submitting} className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black px-6 py-4 font-semibold hover:brightness-110 transition disabled:opacity-60">
+              {sent ? <><CheckCircle2 className="h-5 w-5" /> Thank you — we'll be in touch!</> : submitting ? <>Sending…</> : <>Request a Consultation <Send className="h-4 w-4" /></>}
             </button>
           </form>
         </div>

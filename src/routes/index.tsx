@@ -82,6 +82,11 @@ const NAV = [
   ["Products", "products"], ["Consultation", "consultation"], ["Contact", "contact"],
 ] as const;
 
+const MOBILE_NAV = [
+  ["Home", "home"], ["About", "about"], ["Services", "services"], ["Portfolio", "portfolio"],
+  ["Products", "products"], ["Transform Your Space", "ba"], ["Consultation", "consultation"], ["Contact", "contact"],
+] as const;
+
 function Home() {
   const [dark, setDark] = useState(false);
   const [scrolled, setScrolled] = useState(false);

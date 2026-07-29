@@ -58,8 +58,16 @@ export const Route = createFileRoute("/")({
       }),
     }],
   }),
-  component: Home,
+  component: HomeRoute,
 });
+
+function HomeRoute() {
+  return (
+    <PerfProvider>
+      <Home />
+    </PerfProvider>
+  );
+}
 
 const PHONE = "08050805046";
 const WA = "918050805046";

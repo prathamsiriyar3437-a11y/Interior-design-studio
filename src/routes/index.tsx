@@ -1083,7 +1083,7 @@ function Presence() {
           <a href={MAPS} target="_blank" rel="noopener" className="inline-flex items-center gap-2 rounded-full bg-gold text-black px-6 py-3.5 font-semibold"><Navigation className="h-4 w-4" /> Visit Our Studio</a>
         </div>
         <div className="lg:col-span-3 relative rounded-3xl overflow-hidden border border-border min-h-[420px]">
-          <iframe title="Studio location on Google Maps" src="https://www.google.com/maps?q=Maroli%20Mangaluru%20Karnataka%20575005&output=embed" className="absolute inset-0 w-full h-full" loading="lazy" decoding="async" />
+          <iframe title="Studio location on Google Maps" src="https://www.google.com/maps?q=Maroli%20Mangaluru%20Karnataka%20575005&output=embed" className="absolute inset-0 w-full h-full" loading="lazy" />
           <div className="absolute bottom-4 left-4 right-4 sm:right-auto sm:max-w-xs arch-glass rounded-2xl p-5">
             <div className="text-[10px] tracking-[0.3em] uppercase text-copper">Our Studio</div>
             <div className="mt-2 font-display text-xl">Interior Design Studio</div>

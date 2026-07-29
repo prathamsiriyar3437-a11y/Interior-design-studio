@@ -336,28 +336,22 @@ function Magnetic({ children }: { children: React.ReactNode }) {
 
 function Counter({ to, suffix = "", label }: { to: number; suffix?: string; label: string }) {
   const [n, setN] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    let started = false;
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !started) {
-        started = true;
-        const dur = 1800, start = performance.now();
-        const tick = (t: number) => {
-          const p = Math.min(1, (t - start) / dur);
-          setN(Math.floor((1 - Math.pow(1 - p, 3)) * to));
-          if (p < 1) requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-      }
-    }, { threshold: 0.4 });
-    if (ref.current) io.observe(ref.current);
-    return () => io.disconnect();
+    // Counts once on mount — never tied to scroll position.
+    let raf = 0;
+    const dur = 1600, start = performance.now();
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - start) / dur);
+      setN(Math.floor((1 - Math.pow(1 - p, 3)) * to));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [to]);
   return (
-    <div ref={ref} className="text-center">
-      <div className="font-display text-4xl lg:text-5xl gold-text">{n}{suffix}</div>
-      <div className="mt-2 text-xs lg:text-sm tracking-widest uppercase text-white/70">{label}</div>
+    <div className="text-center">
+      <div className="font-display text-3xl sm:text-4xl lg:text-5xl gold-text tabular-nums">{n}{suffix}</div>
+      <div className="mt-2 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase text-white/70">{label}</div>
     </div>
   );
 }

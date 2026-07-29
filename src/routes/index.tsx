@@ -230,61 +230,54 @@ function Home() {
 
 /* ---------------- HERO ---------------- */
 function Hero({ goTo }: { goTo: (id: string) => void }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { parallax } = usePerf();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const yRaw = useTransform(scrollYProgress, [0, 1], [0, 180]);
-  const opacityRaw = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
-  const y = parallax ? yRaw : undefined;
-  const opacity = parallax ? opacityRaw : undefined;
-
   return (
-    <section id="home" ref={ref} className="relative min-h-screen overflow-hidden">
-      <motion.div style={{ y }} className="absolute inset-0">
-        <img src={hero} alt="Luxury living room interior designed in Mangalore" fetchPriority="high" decoding="async" className="h-full w-full object-cover" width={1920} height={1200} />
+    <section id="home" className="relative min-h-[100svh] overflow-hidden">
+      <div className="absolute inset-0">
+        <img src={hero} alt="Luxury living room interior designed in Mangalore" fetchPriority="high" decoding="async" className="h-full w-full object-cover object-[60%_center] sm:object-center" width={1920} height={1200} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(150deg, color-mix(in oklab, var(--color-espresso) 72%, transparent), color-mix(in oklab, var(--color-forest) 42%, transparent) 55%, rgba(0,0,0,0.78))" }} />
-      </motion.div>
+      </div>
 
-      <motion.div style={{ opacity }} className="relative z-10 min-h-screen flex flex-col justify-center px-6 lg:px-16 pt-32 pb-24 max-w-7xl mx-auto">
+      <div className="relative z-10 min-h-[100svh] flex flex-col justify-center px-5 sm:px-6 lg:px-16 pt-28 pb-32 sm:pb-24 max-w-7xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE, delay: 0.15 }} className="flex items-center gap-3 text-white/90">
-          <span className="h-px w-12 bg-gold" />
-          <span className="text-xs tracking-[0.4em] uppercase">Interior Studio &amp; Showroom · Mangalore</span>
+          <span className="h-px w-8 sm:w-12 bg-gold" />
+          <span className="text-[10px] sm:text-xs tracking-[0.3em] sm:tracking-[0.4em] uppercase">Interior Studio · Mangalore</span>
         </motion.div>
 
         <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.1, ease: EASE, delay: 0.25 }}
-          className="mt-8 text-5xl sm:text-6xl lg:text-8xl font-display leading-[0.95] text-white max-w-5xl">
+          className="mt-6 sm:mt-8 text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-8xl font-display sm:leading-[0.95] text-white max-w-5xl text-balance">
           Spaces Designed <span className="italic gold-text">to Inspire.</span>
         </motion.h1>
 
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.1, ease: EASE, delay: 0.5 }} className="mt-8 max-w-2xl text-lg text-white/80 leading-relaxed">
-          Creating distinctive interiors in Mangalore where architecture, functionality, craftsmanship and timeless design come together.
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.1, ease: EASE, delay: 0.5 }} className="mt-5 sm:mt-8 max-w-2xl text-base sm:text-lg text-white/80 leading-relaxed">
+          <span className="sm:hidden">Distinctive interiors, crafted in Mangalore.</span>
+          <span className="hidden sm:inline">Creating distinctive interiors in Mangalore where architecture, functionality, craftsmanship and timeless design come together.</span>
         </motion.p>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE, delay: 0.65 }} className="mt-10 flex flex-wrap gap-4">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE, delay: 0.65 }} className="mt-8 sm:mt-10 flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4">
           <Magnetic>
-            <button onClick={() => goTo("portfolio")} className="group inline-flex items-center gap-3 rounded-full bg-gold text-black px-8 py-4 font-semibold hover:brightness-110 transition shadow-[0_24px_50px_-18px_rgba(201,162,39,0.75)]">
-              Explore Our Portfolio <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition" />
+            <button onClick={() => goTo("portfolio")} className="group w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-full bg-gold text-black px-8 py-4 min-h-[56px] text-base font-semibold active:scale-[0.98] transition shadow-[0_24px_50px_-18px_rgba(201,162,39,0.75)]">
+              Explore Our Work <ArrowRight className="h-4 w-4 [@media(hover:hover)]:group-hover:translate-x-1 transition" />
             </button>
           </Magnetic>
           <Magnetic>
-            <button onClick={() => goTo("consultation")} className="inline-flex items-center gap-3 rounded-full liquid-glass text-white px-8 py-4 font-semibold">
-              Book a Consultation
+            <button onClick={() => goTo("ba")} className="w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-full liquid-glass text-white px-8 py-4 min-h-[56px] text-base font-semibold active:scale-[0.98]">
+              Transform Your Space
             </button>
           </Magnetic>
         </motion.div>
 
         {/* Floating glass card */}
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.2, ease: EASE, delay: 0.85 }}
-          className="mt-16 max-w-xl arch-glass rounded-3xl p-7 text-white">
-          <div className="text-[11px] tracking-[0.35em] uppercase text-gold">Interior Design • Consultation • Craftsmanship</div>
-          <p className="mt-3 font-display text-2xl leading-snug">Transforming ideas into extraordinary spaces.</p>
-          <div className="mt-5 flex items-center gap-4 text-sm text-white/75">
+          className="mt-10 sm:mt-16 max-w-xl arch-glass rounded-3xl p-6 sm:p-7 text-white">
+          <div className="text-[10px] sm:text-[11px] tracking-[0.3em] uppercase text-gold">Design • Consultation • Craftsmanship</div>
+          <p className="mt-3 font-display text-xl sm:text-2xl leading-snug">Transforming ideas into extraordinary spaces.</p>
+          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/75">
             <span className="flex items-center gap-1.5"><Star className="h-4 w-4 fill-gold text-gold" /> 5.0 Google Rating</span>
-            <span className="h-4 w-px bg-white/25" />
+            <span className="hidden sm:block h-4 w-px bg-white/25" />
             <span>Studio in Maroli, Mangalore</span>
           </div>
         </motion.div>
-      </motion.div>
+      </div>
 
       <div className="relative z-10 -mt-6 pb-8">
         <div className="max-w-7xl mx-auto px-6 lg:px-16">

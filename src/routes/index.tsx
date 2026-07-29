@@ -123,7 +123,7 @@ function Home() {
 
   return (
     <div className="min-h-screen relative">
-      <div aria-hidden className="hero-ambient fixed inset-0 -z-10 pointer-events-none" />
+      <AmbientBackground />
       <motion.div style={{ scaleX: progress }} className="fixed top-0 left-0 right-0 h-[2px] bg-gold z-[60] origin-left" />
 
       {/* NAV */}

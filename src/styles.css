@@ -261,3 +261,108 @@
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
 }
+
+/* ---------- performance-aware ambient system ---------- */
+.ambient-root {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+  --mx: 50%;
+  --my: 35%;
+}
+.ambient-base {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(70% 60% at 12% 8%, color-mix(in oklab, var(--color-champagne) 45%, transparent), transparent 70%),
+    radial-gradient(60% 55% at 90% 12%, color-mix(in oklab, var(--color-emerald) 16%, transparent), transparent 70%),
+    var(--color-background);
+}
+.ambient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.5;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+.ambient-blob-1 {
+  width: 46vmax; height: 46vmax; left: -12vmax; top: -10vmax;
+  background: radial-gradient(circle, color-mix(in oklab, var(--color-gold) 55%, transparent), transparent 68%);
+}
+.ambient-blob-2 {
+  width: 40vmax; height: 40vmax; right: -10vmax; top: 12vh;
+  background: radial-gradient(circle, color-mix(in oklab, var(--color-emerald) 42%, transparent), transparent 68%);
+}
+.ambient-blob-3 {
+  width: 44vmax; height: 44vmax; left: 35%; bottom: -18vmax;
+  background: radial-gradient(circle, color-mix(in oklab, var(--color-terracotta) 38%, transparent), transparent 68%);
+}
+.ambient-blob.is-animated { animation: ambient-drift 26s ease-in-out infinite alternate; }
+.ambient-blob-2.is-animated { animation-duration: 32s; animation-delay: -8s; }
+.ambient-blob-3.is-animated { animation-duration: 38s; animation-delay: -14s; }
+
+@keyframes ambient-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(4vw, -3vh, 0) scale(1.07); }
+  100% { transform: translate3d(-3vw, 4vh, 0) scale(0.96); }
+}
+
+.ambient-cursor {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(28vmax 28vmax at var(--mx) var(--my),
+    color-mix(in oklab, var(--color-champagne) 40%, transparent), transparent 70%);
+  opacity: 0.7;
+}
+.dark .ambient-cursor { opacity: 0.35; }
+
+.ambient-particles span {
+  position: absolute;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--color-gold) 75%, transparent);
+  opacity: 0.35;
+  will-change: transform, opacity;
+  animation-name: ambient-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+@keyframes ambient-float {
+  0%   { transform: translate3d(0, 12px, 0); opacity: 0.12; }
+  50%  { transform: translate3d(10px, -22px, 0); opacity: 0.45; }
+  100% { transform: translate3d(0, 12px, 0); opacity: 0.12; }
+}
+
+/* Tier: performance — cheaper glass, no heavy blurs, no drifting */
+html[data-perf="performance"] .ambient-blob { filter: blur(48px); opacity: 0.4; animation: none; }
+html[data-perf="performance"] .glass,
+html[data-perf="performance"] .glass-dark,
+html[data-perf="performance"] .frosted,
+html[data-perf="performance"] .frosted-dark,
+html[data-perf="performance"] .liquid-glass { backdrop-filter: blur(8px) saturate(120%); }
+html[data-perf="performance"] .glass-panel,
+html[data-perf="performance"] .glass-panel-dark,
+html[data-perf="performance"] .arch-glass { backdrop-filter: blur(12px) saturate(125%); }
+
+/* Tier: balanced — moderate blur budget */
+html[data-perf="balanced"] .glass-panel,
+html[data-perf="balanced"] .glass-panel-dark,
+html[data-perf="balanced"] .arch-glass { backdrop-filter: blur(18px) saturate(140%); }
+html[data-perf="balanced"] .ambient-blob { filter: blur(60px); }
+
+/* Reduced motion */
+html[data-motion="reduced"] .ambient-blob,
+html[data-motion="reduced"] .ambient-particles span { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* GPU hint only for elements that actually animate */
+.gpu { transform: translate3d(0, 0, 0); will-change: transform; }

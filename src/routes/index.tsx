@@ -1,9 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { motion, useScroll, useSpring, AnimatePresence } from "motion/react";
+import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { FormEvent } from "react";
 import { PerfProvider, usePerf } from "@/lib/perf";
-import { supabase } from "@/lib/supabaseClient";
 import { AmbientBackground } from "@/components/AmbientBackground";
 import {
   Phone, MapPin, Star, ArrowRight, ArrowLeft, ArrowUp, MessageCircle, Menu, X, Moon, Sun,
@@ -84,11 +82,6 @@ const NAV = [
   ["Products", "products"], ["Consultation", "consultation"], ["Contact", "contact"],
 ] as const;
 
-const MOBILE_NAV = [
-  ["Home", "home"], ["About", "about"], ["Services", "services"], ["Portfolio", "portfolio"],
-  ["Products", "products"], ["Transform Your Space", "ba"], ["Consultation", "consultation"], ["Contact", "contact"],
-] as const;
-
 function Home() {
   const [dark, setDark] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -165,43 +158,22 @@ function Home() {
         </div>
       </header>
 
-      {/* Mobile navigation — full-screen bottom sheet */}
+      {/* Mobile menu */}
       <AnimatePresence>
         {menu && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-md lg:hidden" onClick={() => setMenu(false)}>
-            <motion.aside
-              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-              transition={{ type: "spring", stiffness: 320, damping: 34 }}
-              drag="y" dragConstraints={{ top: 0, bottom: 0 }} dragElastic={{ top: 0, bottom: 0.4 }}
-              onDragEnd={(_, info) => { if (info.offset.y > 90) setMenu(false); }}
-              onClick={(e) => e.stopPropagation()}
-              className="absolute inset-x-0 bottom-0 max-h-[92svh] overflow-y-auto rounded-t-[2rem] arch-glass bg-background/95 px-6 pt-3 pb-8 flex flex-col">
-              <span className="mx-auto h-1.5 w-12 rounded-full bg-foreground/20" />
-              <div className="mt-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="grid place-items-center h-9 w-9 rounded-full border border-gold text-gold font-display text-lg">I</span>
-                  <span className="font-display text-base">Interior Design Studio</span>
-                </div>
-                <button onClick={() => setMenu(false)} aria-label="Close menu" className="grid place-items-center h-11 w-11 rounded-full border border-border active:scale-95 transition"><X className="h-4 w-4" /></button>
-              </div>
-              <nav className="mt-4 flex flex-col">
-                {MOBILE_NAV.map(([l, id]) => (
-                  <button key={id} onClick={() => goTo(id)}
-                    className="py-4 min-h-[56px] border-b border-border font-display text-2xl text-left active:text-gold transition flex items-center justify-between">
-                    {l} <ArrowRight className="h-4 w-4 text-gold/70" />
-                  </button>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-md lg:hidden" onClick={() => setMenu(false)}>
+            <motion.aside initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 26 }} onClick={(e) => e.stopPropagation()} className="absolute right-0 top-0 bottom-0 w-80 max-w-[85vw] arch-glass bg-background/90 p-8 flex flex-col">
+              <button onClick={() => setMenu(false)} aria-label="Close menu" className="self-end grid place-items-center h-10 w-10 rounded-full border border-border"><X className="h-4 w-4" /></button>
+              <nav className="mt-8 flex flex-col gap-1">
+                {NAV.map(([l, id]) => (
+                  <button key={id} onClick={() => goTo(id)} className="py-3 border-b border-border font-display text-2xl hover:text-gold transition text-left">{l}</button>
                 ))}
               </nav>
-              <button onClick={() => goTo("consultation")} className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black px-5 py-4 min-h-[56px] font-semibold active:scale-[0.98] transition">
-                Start Your Design Journey <ArrowRight className="h-4 w-4" />
-              </button>
-              <a href={`tel:${PHONE}`} className="mt-3 inline-flex items-center justify-center gap-2 rounded-full border border-border px-5 py-3.5 font-semibold"><Phone className="h-4 w-4" /> {PHONE}</a>
+              <button onClick={() => goTo("consultation")} className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black px-5 py-3 font-semibold">Book a Consultation</button>
             </motion.aside>
           </motion.div>
         )}
       </AnimatePresence>
-
 
       {/* Glass transition veil */}
       <AnimatePresence>
@@ -258,54 +230,61 @@ function Home() {
 
 /* ---------------- HERO ---------------- */
 function Hero({ goTo }: { goTo: (id: string) => void }) {
-  return (
-    <section id="home" className="relative min-h-[100svh] overflow-hidden">
-      <div className="absolute inset-0">
-        <img src={hero} alt="Luxury living room interior designed in Mangalore" fetchPriority="high" decoding="async" className="h-full w-full object-cover object-[60%_center] sm:object-center" width={1920} height={1200} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(150deg, color-mix(in oklab, var(--color-espresso) 72%, transparent), color-mix(in oklab, var(--color-forest) 42%, transparent) 55%, rgba(0,0,0,0.78))" }} />
-      </div>
+  const ref = useRef<HTMLDivElement>(null);
+  const { parallax } = usePerf();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const yRaw = useTransform(scrollYProgress, [0, 1], [0, 180]);
+  const opacityRaw = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
+  const y = parallax ? yRaw : undefined;
+  const opacity = parallax ? opacityRaw : undefined;
 
-      <div className="relative z-10 min-h-[100svh] flex flex-col justify-center px-5 sm:px-6 lg:px-16 pt-28 pb-32 sm:pb-24 max-w-7xl mx-auto">
+  return (
+    <section id="home" ref={ref} className="relative min-h-screen overflow-hidden">
+      <motion.div style={{ y }} className="absolute inset-0">
+        <img src={hero} alt="Luxury living room interior designed in Mangalore" fetchPriority="high" decoding="async" className="h-full w-full object-cover" width={1920} height={1200} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(150deg, color-mix(in oklab, var(--color-espresso) 72%, transparent), color-mix(in oklab, var(--color-forest) 42%, transparent) 55%, rgba(0,0,0,0.78))" }} />
+      </motion.div>
+
+      <motion.div style={{ opacity }} className="relative z-10 min-h-screen flex flex-col justify-center px-6 lg:px-16 pt-32 pb-24 max-w-7xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE, delay: 0.15 }} className="flex items-center gap-3 text-white/90">
-          <span className="h-px w-8 sm:w-12 bg-gold" />
-          <span className="text-[10px] sm:text-xs tracking-[0.3em] sm:tracking-[0.4em] uppercase">Interior Studio · Mangalore</span>
+          <span className="h-px w-12 bg-gold" />
+          <span className="text-xs tracking-[0.4em] uppercase">Interior Studio &amp; Showroom · Mangalore</span>
         </motion.div>
 
         <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.1, ease: EASE, delay: 0.25 }}
-          className="mt-6 sm:mt-8 text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-8xl font-display sm:leading-[0.95] text-white max-w-5xl text-balance">
+          className="mt-8 text-5xl sm:text-6xl lg:text-8xl font-display leading-[0.95] text-white max-w-5xl">
           Spaces Designed <span className="italic gold-text">to Inspire.</span>
         </motion.h1>
 
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.1, ease: EASE, delay: 0.5 }} className="mt-5 sm:mt-8 max-w-2xl text-base sm:text-lg text-white/80 leading-relaxed">
-          <span className="sm:hidden">Distinctive interiors, crafted in Mangalore.</span>
-          <span className="hidden sm:inline">Creating distinctive interiors in Mangalore where architecture, functionality, craftsmanship and timeless design come together.</span>
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.1, ease: EASE, delay: 0.5 }} className="mt-8 max-w-2xl text-lg text-white/80 leading-relaxed">
+          Creating distinctive interiors in Mangalore where architecture, functionality, craftsmanship and timeless design come together.
         </motion.p>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE, delay: 0.65 }} className="mt-8 sm:mt-10 flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: EASE, delay: 0.65 }} className="mt-10 flex flex-wrap gap-4">
           <Magnetic>
-            <button onClick={() => goTo("portfolio")} className="group w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-full bg-gold text-black px-8 py-4 min-h-[56px] text-base font-semibold active:scale-[0.98] transition shadow-[0_24px_50px_-18px_rgba(201,162,39,0.75)]">
-              Explore Our Work <ArrowRight className="h-4 w-4 [@media(hover:hover)]:group-hover:translate-x-1 transition" />
+            <button onClick={() => goTo("portfolio")} className="group inline-flex items-center gap-3 rounded-full bg-gold text-black px-8 py-4 font-semibold hover:brightness-110 transition shadow-[0_24px_50px_-18px_rgba(201,162,39,0.75)]">
+              Explore Our Portfolio <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition" />
             </button>
           </Magnetic>
           <Magnetic>
-            <button onClick={() => goTo("ba")} className="w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-full liquid-glass text-white px-8 py-4 min-h-[56px] text-base font-semibold active:scale-[0.98]">
-              Transform Your Space
+            <button onClick={() => goTo("consultation")} className="inline-flex items-center gap-3 rounded-full liquid-glass text-white px-8 py-4 font-semibold">
+              Book a Consultation
             </button>
           </Magnetic>
         </motion.div>
 
         {/* Floating glass card */}
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.2, ease: EASE, delay: 0.85 }}
-          className="mt-10 sm:mt-16 max-w-xl arch-glass rounded-3xl p-6 sm:p-7 text-white">
-          <div className="text-[10px] sm:text-[11px] tracking-[0.3em] uppercase text-gold">Design • Consultation • Craftsmanship</div>
-          <p className="mt-3 font-display text-xl sm:text-2xl leading-snug">Transforming ideas into extraordinary spaces.</p>
-          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/75">
+          className="mt-16 max-w-xl arch-glass rounded-3xl p-7 text-white">
+          <div className="text-[11px] tracking-[0.35em] uppercase text-gold">Interior Design • Consultation • Craftsmanship</div>
+          <p className="mt-3 font-display text-2xl leading-snug">Transforming ideas into extraordinary spaces.</p>
+          <div className="mt-5 flex items-center gap-4 text-sm text-white/75">
             <span className="flex items-center gap-1.5"><Star className="h-4 w-4 fill-gold text-gold" /> 5.0 Google Rating</span>
-            <span className="hidden sm:block h-4 w-px bg-white/25" />
+            <span className="h-4 w-px bg-white/25" />
             <span>Studio in Maroli, Mangalore</span>
           </div>
         </motion.div>
-      </div>
+      </motion.div>
 
       <div className="relative z-10 -mt-6 pb-8">
         <div className="max-w-7xl mx-auto px-6 lg:px-16">
@@ -364,22 +343,28 @@ function Magnetic({ children }: { children: React.ReactNode }) {
 
 function Counter({ to, suffix = "", label }: { to: number; suffix?: string; label: string }) {
   const [n, setN] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    // Counts once on mount — never tied to scroll position.
-    let raf = 0;
-    const dur = 1600, start = performance.now();
-    const tick = (t: number) => {
-      const p = Math.min(1, (t - start) / dur);
-      setN(Math.floor((1 - Math.pow(1 - p, 3)) * to));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    let started = false;
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !started) {
+        started = true;
+        const dur = 1800, start = performance.now();
+        const tick = (t: number) => {
+          const p = Math.min(1, (t - start) / dur);
+          setN(Math.floor((1 - Math.pow(1 - p, 3)) * to));
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    }, { threshold: 0.4 });
+    if (ref.current) io.observe(ref.current);
+    return () => io.disconnect();
   }, [to]);
   return (
-    <div className="text-center">
-      <div className="font-display text-3xl sm:text-4xl lg:text-5xl gold-text tabular-nums">{n}{suffix}</div>
-      <div className="mt-2 text-[10px] sm:text-xs lg:text-sm tracking-widest uppercase text-white/70">{label}</div>
+    <div ref={ref} className="text-center">
+      <div className="font-display text-4xl lg:text-5xl gold-text">{n}{suffix}</div>
+      <div className="mt-2 text-xs lg:text-sm tracking-widest uppercase text-white/70">{label}</div>
     </div>
   );
 }
@@ -405,7 +390,7 @@ function About() {
   return (
     <Section id="about" tone="warm">
       <div className="grid lg:grid-cols-2 gap-16 items-center">
-        <motion.div>
+        <motion.div initial={{ opacity: 0, x: -24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 1, ease: EASE }}>
           <Kicker>About the Studio</Kicker>
           <h2 className="mt-4 text-4xl lg:text-6xl font-display leading-tight">
             Designing Spaces <span className="italic" style={{ color: "var(--color-terracotta)" }}>With Purpose.</span>
@@ -442,7 +427,7 @@ function About() {
           </div>
         </motion.div>
 
-        <motion.div className="relative">
+        <motion.div initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 1, ease: EASE }} className="relative">
           <div className="grid grid-cols-2 gap-4">
             <img src={pVilla} alt="Villa interior in Mangalore" loading="lazy" decoding="async" className="rounded-3xl aspect-[3/4] object-cover w-full" />
             <div className="pt-12 space-y-4">
@@ -464,66 +449,37 @@ function About() {
 
 /* ---------------- SERVICES ---------------- */
 const SERVICES = [
-  { icon: Sofa, name: "Residential Interiors", desc: "Homes, apartments and villas designed around how you live.", img: pBedroom, tint: "var(--color-emerald)", gallery: [pBedroom, bedroomMaster, windowSeat], points: ["Space planning & layouts", "Custom wardrobes and beds", "Lighting & false ceiling", "Turnkey handover"] },
-  { icon: Building2, name: "Commercial Interiors", desc: "Offices, retail, showrooms and hospitality fit-outs.", img: pOffice, tint: "var(--color-navy)", gallery: [pOffice, pDining, foyerGrand], points: ["Workstation planning", "Cabin & reception joinery", "Acoustics and lighting", "Fast-track execution"] },
-  { icon: PenTool, name: "Custom Interior Design", desc: "Bespoke joinery, feature walls and one-off furniture.", img: studyNook, tint: "var(--color-terracotta)", gallery: [studyNook, bedroomArch, pWardrobe], points: ["Bespoke joinery", "Feature walls & arches", "One-off furniture", "Material detailing"] },
-  { icon: Ruler, name: "Interior Consultation", desc: "Layouts, palettes and material direction, on your site.", img: windowSeat, tint: "var(--color-teal)", gallery: [windowSeat, pVilla, pKitchen], points: ["On-site measurement", "Layout options", "Colour & material palette", "Honest budget range"] },
-  { icon: Box, name: "Furniture & Products", desc: "Curated furniture, lighting, décor and finishes.", img: pWardrobe, tint: "var(--color-copper)", gallery: [pWardrobe, pDining, pKitchen], points: ["Curated furniture", "Sculptural lighting", "Décor & panelling", "Showroom selection"] },
-  { icon: Wand2, name: "Complete Interior Solutions", desc: "Turnkey delivery — one team, one contract, keys handed over.", img: pDining, tint: "var(--color-burgundy)", gallery: [pDining, pVilla, pOffice], points: ["Single point of contact", "3D visualisation", "Site supervision", "Warranty support"] },
+  { icon: Sofa, name: "Residential Interiors", desc: "Homes, apartments and villas designed around how you live.", img: pBedroom, tint: "var(--color-emerald)" },
+  { icon: Building2, name: "Commercial Interiors", desc: "Offices, retail, showrooms and hospitality fit-outs.", img: pOffice, tint: "var(--color-navy)" },
+  { icon: PenTool, name: "Custom Interior Design", desc: "Bespoke joinery, feature walls and one-off furniture.", img: studyNook, tint: "var(--color-terracotta)" },
+  { icon: Ruler, name: "Interior Consultation", desc: "Layouts, palettes and material direction, on your site.", img: windowSeat, tint: "var(--color-teal)" },
+  { icon: Box, name: "Furniture & Products", desc: "Curated furniture, lighting, décor and finishes.", img: pWardrobe, tint: "var(--color-copper)" },
+  { icon: Wand2, name: "Complete Interior Solutions", desc: "Turnkey delivery — one team, one contract, keys handed over.", img: pDining, tint: "var(--color-burgundy)" },
 ];
 
 function Services() {
-  const [open, setOpen] = useState<string | null>(null);
   return (
     <Section id="services" tone="pearl">
-      <Header kicker="What we do" title="Services crafted with care" sub="Tap a service to see what's included." />
-      <div className="mt-12 sm:mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-        {SERVICES.map((s) => {
-          const isOpen = open === s.name;
-          return (
-            <motion.article key={s.name} layout transition={{ duration: 0.5, ease: EASE }}
-              className={`group relative overflow-hidden rounded-3xl flex flex-col justify-end ${isOpen ? "sm:col-span-2 lg:col-span-2 min-h-[440px]" : "min-h-[320px] sm:min-h-[340px]"}`}>
-              <img src={s.img} alt={s.name} loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out [@media(hover:hover)]:group-hover:scale-[1.06]" />
-              <div className="absolute inset-0 transition-opacity duration-700" style={{ background: `linear-gradient(to top, ${s.tint} 88%, transparent 100%)`, opacity: isOpen ? 0.92 : 0.82 }} />
-              <button
-                onClick={() => setOpen(isOpen ? null : s.name)}
-                aria-expanded={isOpen}
-                className="relative w-full text-left p-6 sm:p-7 text-white">
-                <div className="grid place-items-center h-12 w-12 rounded-2xl frosted-dark">
-                  <s.icon className="h-5 w-5 text-gold" />
-                </div>
-                <h3 className="mt-5 font-display text-2xl">{s.name}</h3>
-                <p className="mt-2 text-sm text-white/80 leading-relaxed">{s.desc}</p>
-                <div className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-gold">
-                  {isOpen ? "Close" : "Discuss this"} <ArrowRight className={`h-3.5 w-3.5 transition duration-500 ${isOpen ? "rotate-90" : "[@media(hover:hover)]:group-hover:translate-x-1"}`} />
-                </div>
-              </button>
-              <AnimatePresence initial={false}>
-                {isOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.45, ease: EASE }}
-                    className="relative overflow-hidden text-white">
-                    <div className="px-6 sm:px-7 pb-7">
-                      <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-white/85">
-                        {s.points.map(pt => <li key={pt} className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-gold shrink-0 mt-0.5" />{pt}</li>)}
-                      </ul>
-                      <div className="mt-5 flex gap-3 overflow-x-auto no-scrollbar snap-x">
-                        {s.gallery.map((g, k) => (
-                          <img key={k} src={g} alt={`${s.name} example ${k + 1}`} loading="lazy" decoding="async"
-                            className="snap-start shrink-0 h-24 w-36 rounded-2xl object-cover border border-white/20" />
-                        ))}
-                      </div>
-                      <a href="#consultation" className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black px-6 py-3.5 min-h-[52px] font-semibold active:scale-[0.98] transition">
-                        Discuss This Service <ArrowRight className="h-4 w-4" />
-                      </a>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.article>
-          );
-        })}
+      <Header kicker="What we do" title="Services crafted with care" sub="From a single room to a full turnkey space — delivered end to end by one accountable team." />
+      <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {SERVICES.map((s, i) => (
+          <motion.article key={s.name}
+            initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 1, ease: EASE }}
+            className="group relative overflow-hidden rounded-3xl min-h-[340px] flex flex-col justify-end">
+            <img src={s.img} alt={s.name} loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1600ms] ease-out group-hover:scale-[1.06]" />
+            <div className="absolute inset-0 transition-opacity duration-700" style={{ background: `linear-gradient(to top, ${s.tint} 88%, transparent 100%)`, opacity: 0.82 }} />
+            <div className="relative p-7 text-white">
+              <div className="grid place-items-center h-12 w-12 rounded-2xl frosted-dark">
+                <s.icon className="h-5 w-5 text-gold" />
+              </div>
+              <h3 className="mt-5 font-display text-2xl">{s.name}</h3>
+              <p className="mt-2 text-sm text-white/80 leading-relaxed">{s.desc}</p>
+              <div className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-gold">
+                Discuss this <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition duration-500" />
+              </div>
+            </div>
+          </motion.article>
+        ))}
       </div>
     </Section>
   );
@@ -700,31 +656,30 @@ function Portfolio() {
     <Section id="portfolio" tone="dark">
       <Header light kicker="Portfolio" title="Our work, in detail" sub="Homes, workplaces, custom pieces and our own showroom — a growing record of what we build in Mangalore." />
 
-      <div className="mt-8 sm:mt-10 flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
+      <div className="mt-10 flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
         {CATS.map(c => (
           <button key={c} onClick={() => setCat(c)}
-            className={`shrink-0 px-4 py-2.5 min-h-[44px] rounded-full text-sm border transition duration-500 active:scale-95 ${cat === c ? "bg-gold text-black border-gold" : "frosted-dark text-white/80 [@media(hover:hover)]:hover:text-white [@media(hover:hover)]:hover:border-gold/60"}`}>
+            className={`shrink-0 px-4 py-2 rounded-full text-sm border transition duration-500 ${cat === c ? "bg-gold text-black border-gold" : "frosted-dark text-white/80 hover:text-white hover:border-gold/60"}`}>
             {c}
           </button>
         ))}
       </div>
 
-      <motion.div layout className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-[300px] sm:auto-rows-[240px] gap-4">
+      <motion.div layout className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-[220px] sm:auto-rows-[240px] gap-3 sm:gap-4">
         <AnimatePresence mode="popLayout">
           {filtered.map((p, i) => (
             <motion.button key={p.title} layout onClick={() => setOpen(p)}
               initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }}
-              whileTap={{ scale: 0.985 }}
-              transition={{ delay: i * 0.04, duration: 0.6, ease: EASE }}
+              transition={{ delay: i * 0.05, duration: 0.9, ease: EASE }}
               className={`group relative overflow-hidden rounded-3xl text-left ${p.span ?? ""}`}>
               <img src={p.cover} alt={p.title} loading="lazy" decoding="async"
-                className="h-full w-full object-cover saturate-[0.95] transition-all duration-[1200ms] ease-out [@media(hover:hover)]:group-hover:scale-[1.06] [@media(hover:hover)]:group-hover:saturate-100" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent opacity-80 [@media(hover:hover)]:opacity-70 [@media(hover:hover)]:group-hover:opacity-90 transition-opacity duration-700" />
-              <div className="pointer-events-none absolute inset-3 rounded-2xl border border-white/0 [@media(hover:hover)]:group-hover:border-white/25 transition-all duration-700" />
+                className="h-full w-full object-cover saturate-[0.95] transition-all duration-[1500ms] ease-out group-hover:scale-[1.06] group-hover:saturate-100" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-700" />
+              <div className="pointer-events-none absolute inset-3 rounded-2xl border border-white/0 group-hover:border-white/25 transition-all duration-700" />
               <div className="absolute inset-x-0 bottom-0 p-5 text-white">
                 <div className="text-[10px] tracking-[0.3em] uppercase text-gold">{p.cat}</div>
                 <div className="mt-1 font-display text-xl lg:text-2xl">{p.title}</div>
-                <div className="mt-2 flex items-center gap-2 text-xs text-white/85 [@media(hover:hover)]:text-white/0 [@media(hover:hover)]:translate-y-2 [@media(hover:hover)]:group-hover:text-white/85 [@media(hover:hover)]:group-hover:translate-y-0 transition-all duration-700">
+                <div className="mt-2 flex items-center gap-2 text-xs text-white/0 group-hover:text-white/85 translate-y-2 group-hover:translate-y-0 transition-all duration-700">
                   View Project <ArrowRight className="h-3.5 w-3.5" />
                 </div>
               </div>
@@ -733,7 +688,6 @@ function Portfolio() {
         </AnimatePresence>
       </motion.div>
 
-
       <ProjectDetail project={open} onClose={() => setOpen(null)} onOpen={setOpen} />
     </Section>
   );
@@ -741,61 +695,41 @@ function Portfolio() {
 
 function ProjectDetail({ project, onClose, onOpen }: { project: Project | null; onClose: () => void; onOpen: (p: Project) => void }) {
   const [idx, setIdx] = useState(0);
-  const [full, setFull] = useState(false);
-  const count = project?.gallery.length ?? 0;
-  const prev = useCallback(() => setIdx(i => (i - 1 + count) % count), [count]);
-  const next = useCallback(() => setIdx(i => (i + 1) % count), [count]);
-
-  useEffect(() => { setIdx(0); setFull(false); }, [project]);
+  useEffect(() => { setIdx(0); }, [project]);
   useEffect(() => {
-    const k = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { if (full) setFull(false); else onClose(); }
-      if (e.key === "ArrowLeft") prev();
-      if (e.key === "ArrowRight") next();
-    };
+    const k = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", k);
     return () => window.removeEventListener("keydown", k);
-  }, [onClose, prev, next, full]);
+  }, [onClose]);
 
   return (
     <AnimatePresence>
       {project && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: EASE }}
-          className="fixed inset-0 z-[80] bg-black/90 backdrop-blur-xl overflow-y-auto overscroll-contain">
-          <button onClick={onClose} aria-label="Close project" className="fixed top-4 right-4 z-20 grid place-items-center h-12 w-12 rounded-full frosted-dark text-white active:scale-95 transition"><X className="h-5 w-5" /></button>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5, ease: EASE }}
+          className="fixed inset-0 z-[80] bg-black/85 backdrop-blur-xl overflow-y-auto">
+          <button onClick={onClose} aria-label="Close project" className="fixed top-5 right-5 z-10 grid place-items-center h-12 w-12 rounded-full frosted-dark text-white"><X className="h-5 w-5" /></button>
 
-          <motion.article initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} transition={{ duration: 0.6, ease: EASE }}
-            className="max-w-6xl mx-auto px-4 sm:px-5 pt-16 pb-40 sm:pb-24 text-white">
-            <motion.div
-              className="relative rounded-3xl overflow-hidden aspect-[4/3] sm:aspect-[16/10] touch-pan-y"
-              drag={count > 1 ? "x" : false} dragConstraints={{ left: 0, right: 0 }} dragElastic={0.12}
-              onDragEnd={(_, info) => { if (info.offset.x < -60) next(); else if (info.offset.x > 60) prev(); }}
-            >
+          <motion.article initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} transition={{ duration: 0.7, ease: EASE }}
+            className="max-w-6xl mx-auto px-5 py-16 text-white">
+            <div className="relative rounded-3xl overflow-hidden aspect-[16/10]">
               <AnimatePresence mode="wait">
                 <motion.img key={idx} src={project.gallery[idx]} alt={`${project.title} — image ${idx + 1}`}
-                  initial={{ opacity: 0, scale: 1.03 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5, ease: EASE }}
-                  onClick={() => setFull(true)}
-                  className="absolute inset-0 h-full w-full object-cover cursor-zoom-in" draggable={false} />
+                  initial={{ opacity: 0, scale: 1.03 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease: EASE }}
+                  className="absolute inset-0 h-full w-full object-cover" />
               </AnimatePresence>
-              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
-              {count > 1 && (
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
+              {project.gallery.length > 1 && (
                 <>
-                  <button aria-label="Previous image" onClick={prev}
-                    className="hidden sm:grid absolute left-4 top-1/2 -translate-y-1/2 place-items-center h-11 w-11 rounded-full frosted-dark"><ArrowLeft className="h-4 w-4" /></button>
-                  <button aria-label="Next image" onClick={next}
-                    className="hidden sm:grid absolute right-4 top-1/2 -translate-y-1/2 place-items-center h-11 w-11 rounded-full frosted-dark"><ArrowRight className="h-4 w-4" /></button>
-                  <div className="absolute inset-x-0 bottom-4 flex justify-center gap-1.5 sm:hidden">
-                    {project.gallery.map((_, i) => (
-                      <span key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i === idx ? "w-6 bg-gold" : "w-1.5 bg-white/45"}`} />
-                    ))}
-                  </div>
-                  <div className="absolute top-4 left-4 sm:hidden frosted-dark text-[10px] tracking-[0.25em] uppercase px-3 py-1 rounded-full">Swipe →</div>
+                  <button aria-label="Previous image" onClick={() => setIdx(i => (i - 1 + project.gallery.length) % project.gallery.length)}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 grid place-items-center h-11 w-11 rounded-full frosted-dark"><ArrowLeft className="h-4 w-4" /></button>
+                  <button aria-label="Next image" onClick={() => setIdx(i => (i + 1) % project.gallery.length)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 grid place-items-center h-11 w-11 rounded-full frosted-dark"><ArrowRight className="h-4 w-4" /></button>
                 </>
               )}
-            </motion.div>
+            </div>
 
-            {count > 1 && (
-              <div className="mt-3 hidden sm:flex gap-3 overflow-x-auto no-scrollbar">
+            {project.gallery.length > 1 && (
+              <div className="mt-3 flex gap-3 overflow-x-auto no-scrollbar">
                 {project.gallery.map((g, i) => (
                   <button key={i} onClick={() => setIdx(i)} className={`shrink-0 h-20 w-28 rounded-xl overflow-hidden border transition ${i === idx ? "border-gold" : "border-white/15 opacity-70 hover:opacity-100"}`}>
                     <img src={g} alt="" className="h-full w-full object-cover" />
@@ -804,12 +738,12 @@ function ProjectDetail({ project, onClose, onOpen }: { project: Project | null; 
               </div>
             )}
 
-            <div className="mt-8 sm:mt-10 grid lg:grid-cols-3 gap-8 lg:gap-10">
+            <div className="mt-10 grid lg:grid-cols-3 gap-10">
               <div className="lg:col-span-2">
                 <div className="text-[11px] tracking-[0.35em] uppercase text-gold">{project.cat}</div>
-                <h3 className="mt-3 font-display text-3xl sm:text-4xl lg:text-5xl">{project.title}</h3>
-                <p className="mt-4 text-white/70 flex items-center gap-2 text-sm"><MapPin className="h-4 w-4 text-gold shrink-0" /> {project.location}{project.completed && ` · Completed ${project.completed}`}</p>
-                <p className="mt-6 text-base sm:text-lg text-white/85 leading-relaxed">{project.desc}</p>
+                <h3 className="mt-3 font-display text-4xl lg:text-5xl">{project.title}</h3>
+                <p className="mt-4 text-white/70 flex items-center gap-2 text-sm"><MapPin className="h-4 w-4 text-gold" /> {project.location}{project.completed && ` · Completed ${project.completed}`}</p>
+                <p className="mt-6 text-lg text-white/85 leading-relaxed">{project.desc}</p>
                 <h4 className="mt-8 font-display text-2xl">Design concept</h4>
                 <p className="mt-2 text-white/75 leading-relaxed">{project.concept}</p>
               </div>
@@ -830,54 +764,23 @@ function ProjectDetail({ project, onClose, onOpen }: { project: Project | null; 
 
             <div className="mt-14">
               <h4 className="font-display text-2xl">Related projects</h4>
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="mt-4 grid sm:grid-cols-3 gap-4">
                 {PROJECTS.filter(p => p.title !== project.title && p.cat === project.cat).slice(0, 3).map(p => (
-                  <button key={p.title} onClick={() => onOpen(p)} className="group relative rounded-2xl overflow-hidden aspect-[4/3] text-left active:scale-[0.98] transition">
-                    <img src={p.cover} alt={p.title} loading="lazy" className="h-full w-full object-cover transition duration-1000 [@media(hover:hover)]:group-hover:scale-105" />
+                  <button key={p.title} onClick={() => onOpen(p)} className="group relative rounded-2xl overflow-hidden aspect-[4/3] text-left">
+                    <img src={p.cover} alt={p.title} className="h-full w-full object-cover transition duration-1000 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
-                    <div className="absolute bottom-3 left-4 right-3 font-display text-base sm:text-lg">{p.title}</div>
+                    <div className="absolute bottom-3 left-4 font-display text-lg">{p.title}</div>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="mt-14 rounded-3xl p-8 sm:p-10 text-center tinted-emerald">
-              <h4 className="font-display text-2xl sm:text-3xl lg:text-4xl">Have a space like this?</h4>
+            <div className="mt-14 rounded-3xl p-10 text-center tinted-emerald">
+              <h4 className="font-display text-3xl lg:text-4xl">Have a space like this?</h4>
               <p className="mt-3 text-white/75">Tell us about it — we'll walk you through what's possible.</p>
-              <a href="#consultation" onClick={onClose} className="mt-6 inline-flex items-center gap-2 rounded-full bg-gold text-black px-7 py-4 min-h-[56px] font-semibold active:scale-[0.98] transition">Start Your Design Journey <ArrowRight className="h-4 w-4" /></a>
+              <a href="#consultation" onClick={onClose} className="mt-6 inline-flex items-center gap-2 rounded-full bg-gold text-black px-7 py-3.5 font-semibold">Book a Consultation <ArrowRight className="h-4 w-4" /></a>
             </div>
           </motion.article>
-
-          {/* Sticky action bar */}
-          <div className="fixed bottom-0 inset-x-0 z-20 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] frosted-dark flex gap-2">
-            <a href={`https://wa.me/${WA}`} target="_blank" rel="noopener" aria-label="WhatsApp us" className="grid place-items-center h-[52px] w-[52px] shrink-0 rounded-full border border-white/25 text-white"><MessageCircle className="h-5 w-5" /></a>
-            <a href="#consultation" onClick={onClose} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black min-h-[52px] px-4 font-semibold active:scale-[0.98] transition">
-              Get This Look For My Space <ArrowRight className="h-4 w-4" />
-            </a>
-          </div>
-
-          {/* Full-screen image viewer */}
-          <AnimatePresence>
-            {full && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
-                className="fixed inset-0 z-[90] bg-black grid place-items-center" onClick={() => setFull(false)}>
-                <motion.img
-                  key={idx} src={project.gallery[idx]} alt={`${project.title} — full view`}
-                  drag={count > 1 ? "x" : false} dragConstraints={{ left: 0, right: 0 }} dragElastic={0.12}
-                  onClick={(e) => e.stopPropagation()}
-                  onDragEnd={(_, info) => { if (info.offset.x < -60) next(); else if (info.offset.x > 60) prev(); }}
-                  className="max-h-[88svh] max-w-full object-contain" draggable={false} />
-                <button onClick={() => setFull(false)} aria-label="Close image" className="absolute top-4 right-4 grid place-items-center h-12 w-12 rounded-full frosted-dark text-white"><X className="h-5 w-5" /></button>
-                {count > 1 && (
-                  <div className="absolute inset-x-0 bottom-6 flex justify-center gap-1.5">
-                    {project.gallery.map((_, i) => (
-                      <span key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i === idx ? "w-6 bg-gold" : "w-1.5 bg-white/45"}`} />
-                    ))}
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>
@@ -891,7 +794,7 @@ function Showroom() {
       <div className="max-w-7xl mx-auto relative overflow-hidden rounded-3xl min-h-[620px] flex items-end">
         <img src={hero} alt="Our interior design studio and showroom in Mangalore" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, color-mix(in oklab, var(--color-espresso) 90%, transparent), transparent 75%)" }} />
-        <motion.div
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 1.1, ease: EASE }}
           className="relative w-full p-6 sm:p-10 lg:p-14">
           <div className="max-w-2xl arch-glass rounded-3xl p-8 text-white">
             <Kicker>Experience Our Space</Kicker>
@@ -907,6 +810,7 @@ function Showroom() {
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[pWardrobe, pDining, pKitchen, pOffice].map((img, i) => (
               <motion.img key={i} src={img} alt="Showroom detail" loading="lazy" decoding="async"
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.9, ease: EASE }}
                 className="rounded-2xl aspect-[4/3] object-cover w-full" />
             ))}
           </div>
@@ -958,7 +862,7 @@ function Slider({ beforeImg, afterImg }: { beforeImg: string; afterImg: string }
 function BeforeAfter() {
   return (
     <Section id="ba" tone="warm">
-      <Header kicker="Transform Your Space" title="See the transformation" sub="Drag or swipe the handle to reveal how an ordinary room becomes an extraordinary space." />
+      <Header kicker="Before &amp; After" title="See the transformation" sub="Drag the handle to reveal how an ordinary room becomes an extraordinary space." />
       <div className="mt-12"><Slider beforeImg={before} afterImg={after} /></div>
     </Section>
   );
@@ -990,7 +894,7 @@ function Products() {
 
       <div ref={scroller} className="mt-12 flex gap-5 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-2 -mx-2 px-2">
         {PRODUCTS.map((p, i) => (
-          <motion.article key={p.name}
+          <motion.article key={p.name} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06, duration: 0.9, ease: EASE }}
             className="group snap-start shrink-0 w-[280px] sm:w-[320px]">
             <div className="relative overflow-hidden rounded-3xl aspect-[4/5]">
               <img src={p.img} alt={p.name} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
@@ -1021,7 +925,7 @@ function WhyUs() {
       <Header light kicker="Why choose us" title="A studio built on trust" sub="Nine reasons clients recommend us — and come back for their next space." />
       <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map(([t, Icon], i) => (
-          <motion.div key={t}
+          <motion.div key={t} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07, duration: 0.9, ease: EASE }}
             className="frosted-dark rounded-2xl p-6 flex items-center gap-4 text-white hover:border-gold transition duration-700">
             <div className="grid place-items-center h-12 w-12 rounded-xl bg-gold text-black shrink-0"><Icon className="h-5 w-5" /></div>
             <div className="font-display text-xl">{t}</div>
@@ -1051,7 +955,7 @@ function Process() {
         <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gold to-transparent hidden lg:block" />
         <div className="space-y-8 lg:space-y-16">
           {STEPS.map(([t, d], i) => (
-            <motion.div key={t}
+            <motion.div key={t} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.9, ease: EASE }}
               className={`grid lg:grid-cols-2 gap-6 items-center ${i % 2 ? "lg:[direction:rtl]" : ""}`}>
               <div className="[direction:ltr]">
                 <div className="frosted rounded-3xl p-8 hover:border-gold transition duration-700">
@@ -1116,39 +1020,6 @@ function Testimonials() {
 /* ---------------- CONSULTATION ---------------- */
 function Consultation() {
   const [sent, setSent] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    const form = e.currentTarget;
-    const data = new FormData(form);
-    const payload = {
-      name: String(data.get("name") ?? "").trim(),
-      phone: String(data.get("phone") ?? "").trim(),
-      email: String(data.get("email") ?? "").trim() || null,
-      location: String(data.get("location") ?? "").trim() || null,
-      project_type: String(data.get("type") ?? "").trim() || null,
-      budget: String(data.get("budget") ?? "").trim() || null,
-      message: String(data.get("message") ?? "").trim() || null,
-    };
-    if (!payload.name || !payload.phone) {
-      setError("Please fill in your name and phone number.");
-      return;
-    }
-    setSubmitting(true);
-    const { error: dbError } = await supabase.from("contact_leads").insert([payload]);
-    setSubmitting(false);
-    if (dbError) {
-      setError(dbError.message);
-      return;
-    }
-    form.reset();
-    setSent(true);
-    setTimeout(() => setSent(false), 4000);
-  }
-
   return (
     <section id="consultation" className="relative py-12 lg:py-16 px-4 sm:px-6 lg:px-10">
       <div className="max-w-7xl mx-auto relative overflow-hidden rounded-3xl p-6 sm:p-10 lg:p-16 tinted-emerald">
@@ -1167,7 +1038,7 @@ function Consultation() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit}
+          <form onSubmit={(e) => { e.preventDefault(); setSent(true); setTimeout(() => setSent(false), 4000); }}
             className="arch-glass rounded-3xl p-7 lg:p-9 space-y-4 text-white">
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="Name" name="name" required />
@@ -1182,9 +1053,8 @@ function Consultation() {
               <Field label="Budget range" name="budget" as="select" options={["Under ₹5L", "₹5L – ₹10L", "₹10L – ₹25L", "₹25L+"]} />
             </div>
             <Field label="Message" name="message" as="textarea" />
-            {error && <div className="text-sm text-red-300">{error}</div>}
-            <button type="submit" disabled={submitting} className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black px-6 py-4 font-semibold hover:brightness-110 transition disabled:opacity-60">
-              {sent ? <><CheckCircle2 className="h-5 w-5" /> Thank you — we'll be in touch!</> : submitting ? <>Sending…</> : <>Request a Consultation <Send className="h-4 w-4" /></>}
+            <button type="submit" className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black px-6 py-4 font-semibold hover:brightness-110 transition">
+              {sent ? <><CheckCircle2 className="h-5 w-5" /> Thank you — we'll be in touch!</> : <>Request a Consultation <Send className="h-4 w-4" /></>}
             </button>
           </form>
         </div>

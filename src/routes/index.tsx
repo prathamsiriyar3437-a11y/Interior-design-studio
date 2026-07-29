@@ -798,17 +798,33 @@ function Showroom() {
 
 /* ---------------- BEFORE / AFTER ---------------- */
 function Slider({ beforeImg, afterImg }: { beforeImg: string; afterImg: string }) {
-  const [pos, setPos] = useState(50);
+  const wrap = useRef<HTMLDivElement>(null);
+  const frame = useRef(0);
+  const next = useRef(50);
+
+  // High-frequency drag updates go straight to a CSS variable via rAF — no re-renders.
+  const onInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    next.current = +e.target.value;
+    if (frame.current) return;
+    frame.current = requestAnimationFrame(() => {
+      frame.current = 0;
+      wrap.current?.style.setProperty("--pos", `${next.current}%`);
+    });
+  }, []);
+
+  useEffect(() => () => { if (frame.current) cancelAnimationFrame(frame.current); }, []);
+
   return (
-    <div className="relative aspect-[16/9] rounded-3xl overflow-hidden select-none shadow-2xl">
-      <img src={afterImg} alt="After the interior transformation" className="absolute inset-0 h-full w-full object-cover" />
-      <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-        <img src={beforeImg} alt="Before the interior transformation" className="absolute inset-0 h-full w-full object-cover" />
+    <div ref={wrap} style={{ ["--pos" as string]: "50%" }}
+      className="relative aspect-[16/9] rounded-3xl overflow-hidden select-none shadow-2xl">
+      <img src={afterImg} alt="After the interior transformation" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute inset-0 overflow-hidden" style={{ clipPath: "inset(0 calc(100% - var(--pos)) 0 0)" }}>
+        <img src={beforeImg} alt="Before the interior transformation" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
       </div>
       <div className="absolute top-4 left-4 frosted-dark text-white px-3 py-1 rounded-full text-xs tracking-widest">BEFORE</div>
       <div className="absolute top-4 right-4 frosted-dark text-white px-3 py-1 rounded-full text-xs tracking-widest">AFTER</div>
-      <input aria-label="Reveal before and after" type="range" min={0} max={100} value={pos} onChange={(e) => setPos(+e.target.value)} className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize" />
-      <div className="absolute top-0 bottom-0 w-0.5 bg-gold pointer-events-none" style={{ left: `${pos}%` }}>
+      <input aria-label="Reveal before and after" type="range" min={0} max={100} defaultValue={50} onChange={onInput} className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize" />
+      <div className="gpu absolute top-0 bottom-0 left-0 w-0.5 bg-gold pointer-events-none" style={{ transform: "translate3d(var(--pos), 0, 0)" }}>
         <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-12 w-12 rounded-full bg-gold text-black grid place-items-center shadow-xl">
           <ArrowLeft className="h-3.5 w-3.5 -mr-0.5" /><ArrowRight className="h-3.5 w-3.5 -ml-0.5" />
         </div>

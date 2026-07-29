@@ -366,3 +366,10 @@ html[data-motion="reduced"] .ambient-particles span { animation: none !important
 
 /* GPU hint only for elements that actually animate */
 .gpu { transform: translate3d(0, 0, 0); will-change: transform; }
+
+/* Touch devices: no hover-dependent motion; larger tap feedback instead */
+@media (hover: none) {
+  .liquid-glass:hover { transform: none; }
+  .liquid-glass:hover::after { transform: translateX(-120%); }
+  .liquid-glass:active { transform: scale(0.985); }
+}

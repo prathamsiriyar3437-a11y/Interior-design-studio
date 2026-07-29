@@ -956,7 +956,7 @@ function Slider({ beforeImg, afterImg }: { beforeImg: string; afterImg: string }
 function BeforeAfter() {
   return (
     <Section id="ba" tone="warm">
-      <Header kicker="Before &amp; After" title="See the transformation" sub="Drag the handle to reveal how an ordinary room becomes an extraordinary space." />
+      <Header kicker="Transform Your Space" title="See the transformation" sub="Drag or swipe the handle to reveal how an ordinary room becomes an extraordinary space." />
       <div className="mt-12"><Slider beforeImg={before} afterImg={after} /></div>
     </Section>
   );

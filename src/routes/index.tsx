@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/lib/supabase";
+
 import {
   Phone, MapPin, Star, ArrowRight, ArrowUp, MessageCircle, Menu, X, Moon, Sun,
   Sofa, ChefHat, BedDouble, Layers, PanelTop, Briefcase, Building2, Tv, UtensilsCrossed,

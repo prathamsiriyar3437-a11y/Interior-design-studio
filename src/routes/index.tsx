@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/lib/supabase";
+
 import {
   Phone, MapPin, Star, ArrowRight, ArrowUp, MessageCircle, Menu, X, Moon, Sun,
   Sofa, ChefHat, BedDouble, Layers, PanelTop, Briefcase, Building2, Tv, UtensilsCrossed,
@@ -643,6 +645,36 @@ function CTA() {
 /* ---------------- CONTACT ---------------- */
 function Contact() {
   const [sent, setSent] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const payload = {
+      name: String(fd.get("name") || "").trim().slice(0, 100),
+      phone: String(fd.get("phone") || "").trim().slice(0, 20),
+      email: String(fd.get("email") || "").trim().slice(0, 255) || null,
+      project_type: String(fd.get("type") || "") || null,
+      budget: String(fd.get("budget") || "") || null,
+      message: String(fd.get("message") || "").trim().slice(0, 1000) || null,
+    };
+    if (!payload.name || !payload.phone) return;
+
+    setSaving(true);
+    setError(null);
+    const { error: err } = await supabase.from("appointments").insert(payload);
+    setSaving(false);
+    if (err) {
+      setError("Couldn't send right now. Please call or WhatsApp us.");
+      return;
+    }
+    form.reset();
+    setSent(true);
+    setTimeout(() => setSent(false), 5000);
+  }
+
   return (
     <Section id="contact" tone="secondary">
       <Header kicker="Contact" title="Let's talk" sub="Reach out — we typically respond within a few hours." />
@@ -655,7 +687,7 @@ function Contact() {
             <iframe title="Map" src="https://www.google.com/maps?q=Maroli%20Mangaluru%20Karnataka%20575005&output=embed" className="w-full h-full" loading="lazy" />
           </div>
         </div>
-        <form onSubmit={(e) => { e.preventDefault(); setSent(true); setTimeout(() => setSent(false), 4000); }}
+        <form onSubmit={handleSubmit}
           className="lg:col-span-3 glass rounded-3xl p-8 lg:p-10 space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
             <Field label="Name" name="name" required />
@@ -667,10 +699,12 @@ function Contact() {
             <Field label="Budget" name="budget" as="select" options={["Under ₹5L", "₹5L – ₹10L", "₹10L – ₹25L", "₹25L+"]} />
           </div>
           <Field label="Message" name="message" as="textarea" />
-          <button type="submit" className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black px-6 py-4 font-semibold hover:brightness-110 transition">
-            {sent ? <><CheckCircle2 className="h-5 w-5" /> Thanks — we'll be in touch!</> : <>Send message <Send className="h-4 w-4" /></>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <button type="submit" disabled={saving} className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gold text-black px-6 py-4 font-semibold hover:brightness-110 transition disabled:opacity-70">
+            {sent ? <><CheckCircle2 className="h-5 w-5" /> Thanks — we'll be in touch!</> : saving ? "Sending…" : <>Send message <Send className="h-4 w-4" /></>}
           </button>
         </form>
+
       </div>
     </Section>
   );

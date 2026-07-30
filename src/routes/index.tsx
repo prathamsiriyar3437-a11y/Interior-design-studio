@@ -697,9 +697,14 @@ function Contact() {
             <Field label="Phone" name="phone" type="tel" required />
           </div>
           <Field label="Email" name="email" type="email" />
+          <Field label="Service required" name="service" as="select" options={SERVICES.map(s => s.name)} />
           <div className="grid sm:grid-cols-2 gap-4">
             <Field label="Project type" name="type" as="select" options={["Residential", "Villa", "Apartment", "Office", "Commercial", "Renovation"]} />
             <Field label="Budget" name="budget" as="select" options={["Under ₹5L", "₹5L – ₹10L", "₹10L – ₹25L", "₹25L+"]} />
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field label="Preferred date" name="preferred_date" type="date" />
+            <Field label="Preferred time" name="preferred_time" as="select" options={["09:30 – 11:00 AM", "11:00 AM – 1:00 PM", "2:00 – 4:00 PM", "4:00 – 6:00 PM", "6:00 – 8:00 PM"]} />
           </div>
           <Field label="Message" name="message" as="textarea" />
           {error && <p className="text-sm text-destructive">{error}</p>}
@@ -783,9 +788,30 @@ function Footer() {
       </div>
       <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-white/50">
         <div>© {new Date().getFullYear()} Interior Design Studio. All rights reserved.</div>
-        <div className="flex gap-6"><a href="#" className="hover:text-gold">Privacy Policy</a><a href="#" className="hover:text-gold">Terms</a></div>
+        <div className="flex flex-wrap justify-center gap-6">
+          <a href="#" className="hover:text-gold">Privacy Policy</a>
+          <a href="#" className="hover:text-gold">Terms</a>
+          <AdminFooterLinks />
+        </div>
       </div>
     </footer>
+  );
+}
+
+function AdminFooterLinks() {
+  const [hasAdmin, setHasAdmin] = useState<boolean | null>(null);
+  useEffect(() => {
+    let alive = true;
+    adminExists()
+      .then(v => alive && setHasAdmin(v))
+      .catch(() => alive && setHasAdmin(true));
+    return () => { alive = false; };
+  }, []);
+  return (
+    <>
+      <Link to="/admin/login" className="hover:text-gold">Admin Login</Link>
+      {hasAdmin === false && <Link to="/admin/signup" className="hover:text-gold">Admin Sign Up</Link>}
+    </>
   );
 }
 

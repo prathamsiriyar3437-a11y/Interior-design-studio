@@ -656,8 +656,11 @@ function Contact() {
       name: String(fd.get("name") || "").trim().slice(0, 100),
       phone: String(fd.get("phone") || "").trim().slice(0, 20),
       email: String(fd.get("email") || "").trim().slice(0, 255) || null,
+      service: String(fd.get("service") || "").slice(0, 100) || null,
       project_type: String(fd.get("type") || "") || null,
       budget: String(fd.get("budget") || "") || null,
+      preferred_date: String(fd.get("preferred_date") || "") || null,
+      preferred_time: String(fd.get("preferred_time") || "") || null,
       message: String(fd.get("message") || "").trim().slice(0, 1000) || null,
     };
     if (!payload.name || !payload.phone) return;

@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { adminExists } from "@/lib/admin";
 
 import {
   Phone, MapPin, Star, ArrowRight, ArrowUp, MessageCircle, Menu, X, Moon, Sun,

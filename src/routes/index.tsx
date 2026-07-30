@@ -36,7 +36,7 @@ export const Route = createFileRoute("/")({
       { title: "Interior Design Studio — Luxury Interiors in Mangaluru" },
       { name: "description", content: "Transform your home, villa or office with Mangaluru's premier interior design studio. Turnkey design, premium materials, on-time delivery. Rated 5.0 on Google." },
       { property: "og:title", content: "Interior Design Studio — Luxury Interiors in Mangaluru" },
-      { property: "og:description", content: "Transforming spaces into timeless masterpieces. Book a free consultation today." },
+      { property: "og:description", content: "Transform your home, villa or office with Mangaluru's premier interior design studio. Turnkey design, premium materials, on-time delivery. Rated 5.0 on Google." },
     ],
     links: [{ rel: "canonical", href: "/" }],
     scripts: [{

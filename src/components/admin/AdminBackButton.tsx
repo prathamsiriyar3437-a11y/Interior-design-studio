@@ -6,7 +6,7 @@ export function AdminBackButton() {
 
   function handleClick() {
     if (typeof window !== "undefined" && window.history.length > 1) {
-      navigate(-1);
+      window.history.back();
     } else {
       navigate({ to: "/", replace: false });
     }

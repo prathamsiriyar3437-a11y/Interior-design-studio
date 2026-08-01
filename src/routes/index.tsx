@@ -663,6 +663,7 @@ function Contact() {
       preferred_date: String(fd.get("preferred_date") || "") || null,
       preferred_time: String(fd.get("preferred_time") || "") || null,
       message: String(fd.get("message") || "").trim().slice(0, 1000) || null,
+      status: "Pending",
     };
     if (!payload.name || !payload.phone) return;
 

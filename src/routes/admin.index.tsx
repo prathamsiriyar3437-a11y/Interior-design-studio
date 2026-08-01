@@ -169,6 +169,13 @@ function AdminDashboard() {
     <main className="min-h-screen bg-background">
       <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-5 py-4">
+          <button
+            onClick={() => navigate({ to: "/", replace: false })}
+            aria-label="Back to website"
+            className="mr-2 inline-flex items-center justify-center rounded-full border border-border p-2.5 text-muted-foreground transition hover:border-gold hover:text-gold"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
           <div className="mr-auto">
             <div className="text-[10px] uppercase tracking-[0.35em] text-gold">Interior Design Studio</div>
             <h1 className="font-display text-2xl leading-tight">Bookings dashboard</h1>

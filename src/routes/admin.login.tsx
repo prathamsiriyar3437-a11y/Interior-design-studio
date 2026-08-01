@@ -59,27 +59,30 @@ function AdminLoginPage() {
   }
 
   return (
-    <AdminShell title="Admin login" subtitle="Restricted area — administrators only.">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <label className="block">
-          <span className="text-xs uppercase tracking-widest text-muted-foreground">Email</span>
-          <input name="email" type="email" required autoComplete="email" className={adminInput} />
-        </label>
-        <label className="block">
-          <span className="text-xs uppercase tracking-widest text-muted-foreground">Password</span>
-          <input name="password" type="password" required autoComplete="current-password" className={adminInput} />
-        </label>
-        {error && <p className="text-sm text-destructive">{error}</p>}
-        <button type="submit" disabled={busy} className={`${adminButton} w-full`}>
-          {busy ? "Signing in…" : "Sign in"}
-        </button>
-        {setupNeeded && (
-          <p className="text-center text-xs text-muted-foreground">
-            No administrator yet?{" "}
-            <Link to="/admin/signup" className="text-gold hover:underline">Run one-time setup</Link>
-          </p>
-        )}
-      </form>
-    </AdminShell>
+    <>
+      <AdminBackButton />
+      <AdminShell title="Admin login" subtitle="Restricted area — administrators only.">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <label className="block">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">Email</span>
+            <input name="email" type="email" required autoComplete="email" className={adminInput} />
+          </label>
+          <label className="block">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">Password</span>
+            <input name="password" type="password" required autoComplete="current-password" className={adminInput} />
+          </label>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <button type="submit" disabled={busy} className={`${adminButton} w-full`}>
+            {busy ? "Signing in…" : "Sign in"}
+          </button>
+          {setupNeeded && (
+            <p className="text-center text-xs text-muted-foreground">
+              No administrator yet?{" "}
+              <Link to="/admin/signup" className="text-gold hover:underline">Run one-time setup</Link>
+            </p>
+          )}
+        </form>
+      </AdminShell>
+    </>
   );
 }

@@ -97,27 +97,33 @@ function AdminSignupPage() {
 
   if (checking) {
     return (
-      <AdminShell title="Administrator setup">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Checking setup status…
-        </div>
-      </AdminShell>
+      <>
+        <AdminBackButton />
+        <AdminShell title="Administrator setup">
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" /> Checking setup status…
+          </div>
+        </AdminShell>
+      </>
     );
   }
 
   if (locked) {
     return (
-      <AdminShell title="Sign-up closed" subtitle="This site allows exactly one administrator.">
-        <div className="rounded-2xl border border-gold/30 bg-gold/5 p-6">
-          <Lock className="h-6 w-6 text-gold" />
-          <p className="mt-4 text-sm leading-relaxed">
-            An administrator account has already been created. Please log in.
-          </p>
-          <Link to="/admin/login" className={`${adminButton} mt-6 inline-flex`}>
-            Go to Admin Login
-          </Link>
-        </div>
-      </AdminShell>
+      <>
+        <AdminBackButton />
+        <AdminShell title="Sign-up closed" subtitle="This site allows exactly one administrator.">
+          <div className="rounded-2xl border border-gold/30 bg-gold/5 p-6">
+            <Lock className="h-6 w-6 text-gold" />
+            <p className="mt-4 text-sm leading-relaxed">
+              An administrator account has already been created. Please log in.
+            </p>
+            <Link to="/admin/login" className={`${adminButton} mt-6 inline-flex`}>
+              Go to Admin Login
+            </Link>
+          </div>
+        </AdminShell>
+      </>
     );
   }
 

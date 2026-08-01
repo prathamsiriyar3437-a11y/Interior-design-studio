@@ -128,36 +128,39 @@ function AdminSignupPage() {
   }
 
   return (
-    <AdminShell
-      title="Administrator setup"
-      subtitle="One-time registration. Once this account exists, sign-up is permanently disabled."
-    >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <label className="block">
-          <span className="text-xs uppercase tracking-widest text-muted-foreground">Email</span>
-          <input name="email" type="email" required autoComplete="email" className={adminInput} />
-        </label>
-        <label className="block">
-          <span className="text-xs uppercase tracking-widest text-muted-foreground">Password</span>
-          <input name="password" type="password" required minLength={10} autoComplete="new-password" className={adminInput} />
-        </label>
-        <label className="block">
-          <span className="text-xs uppercase tracking-widest text-muted-foreground">Confirm password</span>
-          <input name="confirm" type="password" required minLength={10} autoComplete="new-password" className={adminInput} />
-        </label>
-        {error && <p className="text-sm text-destructive">{error}</p>}
-        {done && (
-          <p className="flex items-center gap-2 text-sm text-gold">
-            <ShieldCheck className="h-4 w-4" /> Administrator created. Opening dashboard…
+    <>
+      <AdminBackButton />
+      <AdminShell
+        title="Administrator setup"
+        subtitle="One-time registration. Once this account exists, sign-up is permanently disabled."
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <label className="block">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">Email</span>
+            <input name="email" type="email" required autoComplete="email" className={adminInput} />
+          </label>
+          <label className="block">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">Password</span>
+            <input name="password" type="password" required minLength={10} autoComplete="new-password" className={adminInput} />
+          </label>
+          <label className="block">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">Confirm password</span>
+            <input name="confirm" type="password" required minLength={10} autoComplete="new-password" className={adminInput} />
+          </label>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          {done && (
+            <p className="flex items-center gap-2 text-sm text-gold">
+              <ShieldCheck className="h-4 w-4" /> Administrator created. Opening dashboard…
+            </p>
+          )}
+          <button type="submit" disabled={busy} className={`${adminButton} w-full`}>
+            {busy ? "Creating account…" : "Create administrator account"}
+          </button>
+          <p className="text-center text-xs text-muted-foreground">
+            Already set up? <Link to="/admin/login" className="text-gold hover:underline">Admin login</Link>
           </p>
-        )}
-        <button type="submit" disabled={busy} className={`${adminButton} w-full`}>
-          {busy ? "Creating account…" : "Create administrator account"}
-        </button>
-        <p className="text-center text-xs text-muted-foreground">
-          Already set up? <Link to="/admin/login" className="text-gold hover:underline">Admin login</Link>
-        </p>
-      </form>
-    </AdminShell>
+        </form>
+      </AdminShell>
+    </>
   );
 }

@@ -5,6 +5,7 @@ import { Loader2, Lock, ShieldCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { adminExists } from "@/lib/admin";
 import { AdminShell, adminInput, adminButton } from "@/components/admin/AdminShell";
+import { AdminBackButton } from "@/components/admin/AdminBackButton";
 
 export const Route = createFileRoute("/admin/signup")({
   ssr: false,
@@ -96,61 +97,70 @@ function AdminSignupPage() {
 
   if (checking) {
     return (
-      <AdminShell title="Administrator setup">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Checking setup status…
-        </div>
-      </AdminShell>
+      <>
+        <AdminBackButton />
+        <AdminShell title="Administrator setup">
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" /> Checking setup status…
+          </div>
+        </AdminShell>
+      </>
     );
   }
 
   if (locked) {
     return (
-      <AdminShell title="Sign-up closed" subtitle="This site allows exactly one administrator.">
-        <div className="rounded-2xl border border-gold/30 bg-gold/5 p-6">
-          <Lock className="h-6 w-6 text-gold" />
-          <p className="mt-4 text-sm leading-relaxed">
-            An administrator account has already been created. Please log in.
-          </p>
-          <Link to="/admin/login" className={`${adminButton} mt-6 inline-flex`}>
-            Go to Admin Login
-          </Link>
-        </div>
-      </AdminShell>
+      <>
+        <AdminBackButton />
+        <AdminShell title="Sign-up closed" subtitle="This site allows exactly one administrator.">
+          <div className="rounded-2xl border border-gold/30 bg-gold/5 p-6">
+            <Lock className="h-6 w-6 text-gold" />
+            <p className="mt-4 text-sm leading-relaxed">
+              An administrator account has already been created. Please log in.
+            </p>
+            <Link to="/admin/login" className={`${adminButton} mt-6 inline-flex`}>
+              Go to Admin Login
+            </Link>
+          </div>
+        </AdminShell>
+      </>
     );
   }
 
   return (
-    <AdminShell
-      title="Administrator setup"
-      subtitle="One-time registration. Once this account exists, sign-up is permanently disabled."
-    >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <label className="block">
-          <span className="text-xs uppercase tracking-widest text-muted-foreground">Email</span>
-          <input name="email" type="email" required autoComplete="email" className={adminInput} />
-        </label>
-        <label className="block">
-          <span className="text-xs uppercase tracking-widest text-muted-foreground">Password</span>
-          <input name="password" type="password" required minLength={10} autoComplete="new-password" className={adminInput} />
-        </label>
-        <label className="block">
-          <span className="text-xs uppercase tracking-widest text-muted-foreground">Confirm password</span>
-          <input name="confirm" type="password" required minLength={10} autoComplete="new-password" className={adminInput} />
-        </label>
-        {error && <p className="text-sm text-destructive">{error}</p>}
-        {done && (
-          <p className="flex items-center gap-2 text-sm text-gold">
-            <ShieldCheck className="h-4 w-4" /> Administrator created. Opening dashboard…
+    <>
+      <AdminBackButton />
+      <AdminShell
+        title="Administrator setup"
+        subtitle="One-time registration. Once this account exists, sign-up is permanently disabled."
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <label className="block">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">Email</span>
+            <input name="email" type="email" required autoComplete="email" className={adminInput} />
+          </label>
+          <label className="block">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">Password</span>
+            <input name="password" type="password" required minLength={10} autoComplete="new-password" className={adminInput} />
+          </label>
+          <label className="block">
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">Confirm password</span>
+            <input name="confirm" type="password" required minLength={10} autoComplete="new-password" className={adminInput} />
+          </label>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          {done && (
+            <p className="flex items-center gap-2 text-sm text-gold">
+              <ShieldCheck className="h-4 w-4" /> Administrator created. Opening dashboard…
+            </p>
+          )}
+          <button type="submit" disabled={busy} className={`${adminButton} w-full`}>
+            {busy ? "Creating account…" : "Create administrator account"}
+          </button>
+          <p className="text-center text-xs text-muted-foreground">
+            Already set up? <Link to="/admin/login" className="text-gold hover:underline">Admin login</Link>
           </p>
-        )}
-        <button type="submit" disabled={busy} className={`${adminButton} w-full`}>
-          {busy ? "Creating account…" : "Create administrator account"}
-        </button>
-        <p className="text-center text-xs text-muted-foreground">
-          Already set up? <Link to="/admin/login" className="text-gold hover:underline">Admin login</Link>
-        </p>
-      </form>
-    </AdminShell>
+        </form>
+      </AdminShell>
+    </>
   );
 }

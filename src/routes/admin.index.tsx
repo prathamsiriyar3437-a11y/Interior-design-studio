@@ -2,6 +2,7 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowDownUp,
+  ArrowLeft,
   Download,
   Loader2,
   LogOut,

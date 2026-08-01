@@ -124,8 +124,13 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <ClientOnly>
+        <GoldParticles />
+      </ClientOnly>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div className="relative z-10">
+        <Outlet />
+      </div>
       <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
   );

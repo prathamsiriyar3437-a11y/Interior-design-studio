@@ -5,6 +5,7 @@ import { Loader2, Lock, ShieldCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { adminExists } from "@/lib/admin";
 import { AdminShell, adminInput, adminButton } from "@/components/admin/AdminShell";
+import { AdminBackButton } from "@/components/admin/AdminBackButton";
 
 export const Route = createFileRoute("/admin/signup")({
   ssr: false,

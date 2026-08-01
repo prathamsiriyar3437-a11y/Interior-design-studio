@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { adminExists, isAdmin } from "@/lib/admin";
 import { AdminShell, adminInput, adminButton } from "@/components/admin/AdminShell";
+import { AdminBackButton } from "@/components/admin/AdminBackButton";
 
 export const Route = createFileRoute("/admin/login")({
   ssr: false,

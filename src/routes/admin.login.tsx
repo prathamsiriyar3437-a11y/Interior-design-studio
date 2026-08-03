@@ -27,6 +27,8 @@ function AdminLoginPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [setupNeeded, setSetupNeeded] = useState(false);
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
     isAdmin().then((ok) => {
@@ -34,6 +36,62 @@ function AdminLoginPage() {
     });
     adminExists().then((exists) => setSetupNeeded(!exists)).catch(() => {});
   }, [navigate]);
+
+  async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const email = String(fd.get("email") || "").trim().toLowerCase().slice(0, 255);
+    const password = String(fd.get("password") || "");
+    const confirm = String(fd.get("confirm") || "");
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return setError("Enter a valid email address.");
+    if (password.length < 10) return setError("Use a password of at least 10 characters.");
+    if (password !== confirm) return setError("Passwords don't match.");
+
+    setBusy(true);
+    setError(null);
+
+    // Server-side re-check: only one administrator may ever exist.
+    if (await adminExists()) {
+      setBusy(false);
+      setSetupNeeded(false);
+      setMode("login");
+      return setError("An administrator account has already been created. Please log in.");
+    }
+
+    const { error: signUpError } = await supabase.auth.signUp({ email, password });
+    if (signUpError) {
+      setBusy(false);
+      return setError(signUpError.message);
+    }
+
+    let { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      const { data } = await supabase.auth.signInWithPassword({ email, password });
+      sessionData = { session: data.session };
+    }
+    const userId = sessionData.session?.user.id;
+    if (!userId) {
+      setBusy(false);
+      return setError(
+        "Account created, but email confirmation is enabled. Confirm your email, then sign in here."
+      );
+    }
+
+    const { error: claimError } = await supabase.from("admin_users").insert({ id: userId, email });
+    setBusy(false);
+    if (claimError) {
+      setSetupNeeded(false);
+      setMode("login");
+      return setError(
+        claimError.code === "23505"
+          ? "An administrator account has already been created. Please log in."
+          : claimError.message
+      );
+    }
+    setDone(true);
+    setTimeout(() => navigate({ to: "/admin", replace: true }), 900);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

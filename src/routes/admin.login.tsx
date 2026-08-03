@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { ShieldCheck } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
 import { adminExists, isAdmin } from "@/lib/admin";

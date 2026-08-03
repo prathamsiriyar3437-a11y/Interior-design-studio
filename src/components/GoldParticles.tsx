@@ -14,8 +14,6 @@ type P = {
   base: number;
 };
 
-type Ripple = { x: number; y: number; t: number };
-
 export default function GoldParticles() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -33,10 +31,15 @@ export default function GoldParticles() {
     let h = 0;
     let dpr = 1;
     const particles: P[] = [];
-    const ripples: Ripple[] = Array.from({ length: 6 }, () => ({ x: 0, y: 0, t: 1 }));
-    let rippleIdx = 0;
 
     const rand = (a: number, b: number) => a + Math.random() * (b - a);
+
+    const isDark = () => document.documentElement.classList.contains("dark");
+
+    const updateBlend = () => {
+      canvas.style.mixBlendMode = isDark() ? "screen" : "normal";
+    };
+    updateBlend();
 
     const resize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -65,19 +68,11 @@ export default function GoldParticles() {
       });
     }
 
-    const mouse = { x: -9999, y: -9999, active: false, last: 0 };
+    const mouse = { x: -9999, y: -9999, active: false };
     const onMove = (e: PointerEvent) => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
       mouse.active = true;
-      const now = performance.now();
-      if (now - mouse.last > 140) {
-        mouse.last = now;
-        const rp = ripples[rippleIdx++ % ripples.length];
-        rp.x = e.clientX;
-        rp.y = e.clientY;
-        rp.t = 0;
-      }
     };
     const onLeave = () => {
       mouse.active = false;
@@ -95,6 +90,8 @@ export default function GoldParticles() {
 
       ctx.clearRect(0, 0, w, h);
 
+      const dark = isDark();
+
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
@@ -105,7 +102,6 @@ export default function GoldParticles() {
           if (d2 < R * R && d2 > 1) {
             const d = Math.sqrt(d2);
             const f = (1 - d / R) * 0.045;
-            // gentle attraction + tangential orbit
             p.vx += (dx / d) * f + (-dy / d) * f * 1.4;
             p.vy += (dy / d) * f + (dx / d) * f * 1.4;
           }
@@ -129,40 +125,32 @@ export default function GoldParticles() {
         p.twinkle += p.tSpeed;
         const alpha = p.base + Math.sin(p.twinkle) * 0.22;
 
-        ctx.globalAlpha = Math.max(0.05, Math.min(0.85, alpha));
+        ctx.globalAlpha = Math.max(0.05, Math.min(dark ? 0.85 : 0.5, alpha));
         ctx.fillStyle = p.color;
         ctx.shadowColor = p.color;
-        ctx.shadowBlur = p.r * 3.5;
+        ctx.shadowBlur = dark ? p.r * 3.5 : p.r * 1.2;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      ctx.shadowBlur = 0;
-      for (let i = 0; i < ripples.length; i++) {
-        const rp = ripples[i];
-        if (rp.t >= 1) continue;
-        rp.t += 0.022;
-        const e = 1 - Math.pow(1 - rp.t, 3);
-        ctx.globalAlpha = (1 - rp.t) * 0.16;
-        ctx.strokeStyle = "#D4AF37";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.arc(rp.x, rp.y, 10 + e * 90, 0, Math.PI * 2);
-        ctx.stroke();
-      }
       ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
     };
 
     const onVis = () => {
       paused = document.hidden;
     };
 
+    let observer: MutationObserver | null = null;
+
     if (count > 0) {
       window.addEventListener("resize", resize);
       window.addEventListener("pointermove", onMove, { passive: true });
       window.addEventListener("pointerleave", onLeave);
       document.addEventListener("visibilitychange", onVis);
+      observer = new MutationObserver(updateBlend);
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
       raf = requestAnimationFrame(draw);
     }
 
@@ -172,6 +160,7 @@ export default function GoldParticles() {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerleave", onLeave);
       document.removeEventListener("visibilitychange", onVis);
+      observer?.disconnect();
     };
   }, []);
 
@@ -180,7 +169,6 @@ export default function GoldParticles() {
       ref={canvasRef}
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-0"
-      style={{ mixBlendMode: "screen" }}
     />
   );
 }

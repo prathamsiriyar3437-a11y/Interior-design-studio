@@ -116,30 +116,85 @@ function AdminLoginPage() {
     navigate({ to: "/admin", replace: true });
   }
 
+  const registering = mode === "register";
+
   return (
     <>
       <AdminBackButton />
-      <AdminShell title="Admin login" subtitle="Restricted area — administrators only.">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block">
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">Email</span>
-            <input name="email" type="email" required autoComplete="email" className={adminInput} />
-          </label>
-          <label className="block">
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">Password</span>
-            <input name="password" type="password" required autoComplete="current-password" className={adminInput} />
-          </label>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <button type="submit" disabled={busy} className={`${adminButton} w-full`}>
-            {busy ? "Signing in…" : "Sign in"}
-          </button>
-          {setupNeeded && (
-            <p className="text-center text-xs text-muted-foreground">
-              No administrator yet?{" "}
-              <Link to="/admin/signup" className="text-gold hover:underline">Run one-time setup</Link>
-            </p>
-          )}
-        </form>
+      <AdminShell
+        title={registering ? "Administrator setup" : "Admin login"}
+        subtitle={
+          registering
+            ? "One-time registration. Once this account exists, registration is permanently disabled."
+            : "Restricted area — administrators only."
+        }
+      >
+        {setupNeeded && (
+          <div className="mb-6 grid grid-cols-2 gap-1 rounded-full border border-gold/25 bg-background/40 p-1 text-xs uppercase tracking-widest">
+            {(["login", "register"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => {
+                  setMode(m);
+                  setError(null);
+                }}
+                aria-pressed={mode === m}
+                className={`rounded-full px-4 py-2 transition-all duration-500 ${
+                  mode === m ? "bg-gold/15 text-gold" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {m === "login" ? "Sign in" : "Register"}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {registering ? (
+          <form onSubmit={handleRegister} className="space-y-4">
+            <label className="block">
+              <span className="text-xs uppercase tracking-widest text-muted-foreground">Email</span>
+              <input name="email" type="email" required autoComplete="email" className={adminInput} />
+            </label>
+            <label className="block">
+              <span className="text-xs uppercase tracking-widest text-muted-foreground">Password</span>
+              <input name="password" type="password" required minLength={10} autoComplete="new-password" className={adminInput} />
+            </label>
+            <label className="block">
+              <span className="text-xs uppercase tracking-widest text-muted-foreground">Confirm password</span>
+              <input name="confirm" type="password" required minLength={10} autoComplete="new-password" className={adminInput} />
+            </label>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            {done && (
+              <p className="flex items-center gap-2 text-sm text-gold">
+                <ShieldCheck className="h-4 w-4" /> Administrator created. Opening dashboard…
+              </p>
+            )}
+            <button type="submit" disabled={busy} className={`${adminButton} w-full`}>
+              {busy ? "Creating account…" : "Create administrator account"}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <label className="block">
+              <span className="text-xs uppercase tracking-widest text-muted-foreground">Email</span>
+              <input name="email" type="email" required autoComplete="email" className={adminInput} />
+            </label>
+            <label className="block">
+              <span className="text-xs uppercase tracking-widest text-muted-foreground">Password</span>
+              <input name="password" type="password" required autoComplete="current-password" className={adminInput} />
+            </label>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <button type="submit" disabled={busy} className={`${adminButton} w-full`}>
+              {busy ? "Signing in…" : "Sign in"}
+            </button>
+            {!setupNeeded && (
+              <p className="text-center text-xs text-muted-foreground">
+                Only one administrator account exists for this site.
+              </p>
+            )}
+          </form>
+        )}
       </AdminShell>
     </>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const COLORS = ["#FFD700", "#D4AF37", "#F4E2A1", "#B8860B"];
 
@@ -16,8 +16,22 @@ type P = {
 
 export default function GoldParticles() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof document === "undefined") return false;
+    return document.documentElement.classList.contains("dark");
+  });
 
   useEffect(() => {
+    const check = () => setIsDark(document.documentElement.classList.contains("dark"));
+    check();
+    const observer = new MutationObserver(check);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isDark) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -33,13 +47,6 @@ export default function GoldParticles() {
     const particles: P[] = [];
 
     const rand = (a: number, b: number) => a + Math.random() * (b - a);
-
-    const isDark = () => document.documentElement.classList.contains("dark");
-
-    const updateBlend = () => {
-      canvas.style.mixBlendMode = isDark() ? "screen" : "normal";
-    };
-    updateBlend();
 
     const resize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -90,8 +97,6 @@ export default function GoldParticles() {
 
       ctx.clearRect(0, 0, w, h);
 
-      const dark = isDark();
-
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
@@ -125,10 +130,10 @@ export default function GoldParticles() {
         p.twinkle += p.tSpeed;
         const alpha = p.base + Math.sin(p.twinkle) * 0.22;
 
-        ctx.globalAlpha = Math.max(0.05, Math.min(dark ? 0.85 : 0.5, alpha));
+        ctx.globalAlpha = Math.max(0.05, Math.min(0.85, alpha));
         ctx.fillStyle = p.color;
         ctx.shadowColor = p.color;
-        ctx.shadowBlur = dark ? p.r * 3.5 : p.r * 1.2;
+        ctx.shadowBlur = p.r * 3.5;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fill();
@@ -142,15 +147,11 @@ export default function GoldParticles() {
       paused = document.hidden;
     };
 
-    let observer: MutationObserver | null = null;
-
     if (count > 0) {
       window.addEventListener("resize", resize);
       window.addEventListener("pointermove", onMove, { passive: true });
       window.addEventListener("pointerleave", onLeave);
       document.addEventListener("visibilitychange", onVis);
-      observer = new MutationObserver(updateBlend);
-      observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
       raf = requestAnimationFrame(draw);
     }
 
@@ -160,15 +161,17 @@ export default function GoldParticles() {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerleave", onLeave);
       document.removeEventListener("visibilitychange", onVis);
-      observer?.disconnect();
     };
-  }, []);
+  }, [isDark]);
+
+  if (!isDark) return null;
 
   return (
     <canvas
       ref={canvasRef}
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-0"
+      style={{ mixBlendMode: "screen" }}
     />
   );
 }
